@@ -1,10 +1,13 @@
 package booking
 
 import (
+	"context"
 	"encoding/json"
 	"time"
 
 	"github.com/oklog/ulid/v2"
+	pb "github.com/thomaskrut/tekf/booking/pb/protos/v1"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type CreateBookingCommand struct {
@@ -15,7 +18,7 @@ type CreateBookingCommand struct {
 	Name   string `json:"name"`
 }
 
-type CreateBookingEvent struct {
+type BookingEvent struct {
 	EventType string    `json:"eventType"`
 	Id        string    `json:"id"`
 	UnitId    int       `json:"unitId"`
@@ -29,39 +32,54 @@ type publisher interface {
 	Publish(subject string, data []byte) error
 }
 
-type BookingService struct {
-	Publisher publisher
+type eventStoreClient interface {
+	Write(context.Context, *pb.BookingEvent) error
 }
 
-func NewBookingService(publisher publisher) *BookingService {
-	return &BookingService{
-		Publisher: publisher,
+type BookingCommandHandler struct {
+	Publisher        publisher
+	EventStoreClient eventStoreClient
+}
+
+func NewBookingCommandHandler(p publisher, e eventStoreClient) *BookingCommandHandler {
+	return &BookingCommandHandler{
+		Publisher:        p,
+		EventStoreClient: e,
 	}
 }
 
-func (s *BookingService) HandleCreateBookingCommand(cmd CreateBookingCommand) error {
+func (s *BookingCommandHandler) HandleCreateBookingCommand(cmd CreateBookingCommand) error {
 
-	fromTime, err := time.Parse(time.RFC3339, cmd.From)
+	fromTime, err := time.Parse("2006-01-02", cmd.From)
 	if err != nil {
 		return err
 	}
+	protoTimeFrom := timestamppb.New(fromTime)
 
-	toTime, err := time.Parse(time.RFC3339, cmd.To)
+	toTime, err := time.Parse("2006-01-02", cmd.To)
 	if err != nil {
 		return err
 	}
+	protoTimeTo := timestamppb.New(toTime)
 
-	event := CreateBookingEvent{
-		EventType: "BOOKING_CREATED",
+	// Check state to see if booking is possible
+
+	event := pb.BookingEvent{
+		EventType: pb.EventType_EVENT_TYPE_CREATE_BOOKING,
 		Id:        ulid.Make().String(),
-		UnitId:    cmd.UnitId,
-		From:      fromTime,
-		To:        toTime,
-		Guests:    cmd.Guests,
+		UnitId:    int32(cmd.UnitId),
+		From:      protoTimeFrom,
+		To:        protoTimeTo,
+		Guests:    int32(cmd.Guests),
 		Name:      cmd.Name,
 	}
 
-	bytes, err := json.Marshal(event)
+	bytes, err := json.Marshal(&event)
+	if err != nil {
+		return err
+	}
+
+	err = s.EventStoreClient.Write(context.Background(), &event)
 	if err != nil {
 		return err
 	}

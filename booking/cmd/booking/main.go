@@ -6,6 +6,7 @@ import (
 
 	"github.com/nats-io/nats.go"
 	"github.com/thomaskrut/tekf/booking"
+	"github.com/thomaskrut/tekf/booking/client"
 )
 
 func main() {
@@ -20,8 +21,12 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer sub.Unsubscribe()
 
-	s := booking.NewBookingService(nc)
+	c := client.New()
+	defer c.Close()
+
+	h := booking.NewBookingCommandHandler(nc, c)
 
 	log.Printf("Listening on subject [command.booking.*]\n")
 	for {
@@ -37,11 +42,16 @@ func main() {
 		case "command.booking.create":
 			var cmd booking.CreateBookingCommand
 			err = json.Unmarshal(msg.Data, &cmd)
+			log.Println("Received command:", cmd)
 			if err != nil {
 				log.Println("Error:", err)
 				return
 			}
-			s.HandleCreateBookingCommand(cmd)
+			err := h.HandleCreateBookingCommand(cmd)
+			if err != nil {
+				log.Println("Error:", err)
+				return
+			}
 		}
 	}
 

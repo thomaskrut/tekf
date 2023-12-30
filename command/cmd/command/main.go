@@ -35,6 +35,10 @@ func CreateBookingHandler(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("Received payload: %s", payload)
 
-	nc.Publish("command.booking.create", payload)
+	if err = nc.Publish("command.booking.create", payload); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Fatal(err)
+	}
+
 	w.WriteHeader(http.StatusOK)
 }
