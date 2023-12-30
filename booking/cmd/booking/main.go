@@ -1,0 +1,48 @@
+package main
+
+import (
+	"encoding/json"
+	"log"
+
+	"github.com/nats-io/nats.go"
+	"github.com/thomaskrut/tekf/booking"
+)
+
+func main() {
+
+	nc, err := nats.Connect(nats.DefaultURL)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer nc.Close()
+
+	sub, err := nc.SubscribeSync("command.booking.*")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	s := booking.NewBookingService(nc)
+
+	log.Printf("Listening on subject [command.booking.*]\n")
+	for {
+		msg, err := sub.NextMsg(1 * 1000 * 1000 * 1000)
+		if err != nil {
+			if err == nats.ErrTimeout {
+				continue
+			}
+			log.Fatal(err)
+		}
+
+		switch msg.Subject {
+		case "command.booking.create":
+			var cmd booking.CreateBookingCommand
+			err = json.Unmarshal(msg.Data, &cmd)
+			if err != nil {
+				log.Println("Error:", err)
+				return
+			}
+			s.HandleCreateBookingCommand(cmd)
+		}
+	}
+
+}
