@@ -40,5 +40,7 @@ func CreateBookingHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
+	// Wait for reply?
+
 	w.WriteHeader(http.StatusOK)
 }

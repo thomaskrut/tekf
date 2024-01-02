@@ -3,11 +3,22 @@ package booking
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"log"
 	"time"
 
 	"github.com/oklog/ulid/v2"
 	pb "github.com/thomaskrut/tekf/booking/pb/protos/v1"
 	"google.golang.org/protobuf/types/known/timestamppb"
+)
+
+var (
+	ErrInvalidUnitId     = fmt.Errorf("invalid unit id")
+	ErrInvalidGuestName  = fmt.Errorf("invalid guest name")
+	ErrInvalidGuestCount = fmt.Errorf("invalid guest count")
+	ErrInvalidDateRange  = fmt.Errorf("invalid date range")
+	ErrUnitNotAvailable  = fmt.Errorf("unit not available")
+	ErrUnableToParseDate = fmt.Errorf("error parsing date value")
 )
 
 type CreateBookingCommand struct {
@@ -16,16 +27,6 @@ type CreateBookingCommand struct {
 	To     string `json:"to"`
 	Guests int    `json:"guests"`
 	Name   string `json:"name"`
-}
-
-type BookingEvent struct {
-	EventType string    `json:"eventType"`
-	Id        string    `json:"id"`
-	UnitId    int       `json:"unitId"`
-	From      time.Time `json:"from"`
-	To        time.Time `json:"to"`
-	Guests    int       `json:"guests"`
-	Name      string    `json:"name"`
 }
 
 type publisher interface {
@@ -39,12 +40,14 @@ type eventStoreClient interface {
 type BookingCommandHandler struct {
 	Publisher        publisher
 	EventStoreClient eventStoreClient
+	State            State
 }
 
 func NewBookingCommandHandler(p publisher, e eventStoreClient) *BookingCommandHandler {
 	return &BookingCommandHandler{
 		Publisher:        p,
 		EventStoreClient: e,
+		State:            State{},
 	}
 }
 
@@ -52,20 +55,43 @@ func (s *BookingCommandHandler) HandleCreateBookingCommand(cmd CreateBookingComm
 
 	fromTime, err := time.Parse("2006-01-02", cmd.From)
 	if err != nil {
-		return err
+		return ErrUnableToParseDate
 	}
 	protoTimeFrom := timestamppb.New(fromTime)
 
 	toTime, err := time.Parse("2006-01-02", cmd.To)
 	if err != nil {
-		return err
+		return ErrUnableToParseDate
 	}
 	protoTimeTo := timestamppb.New(toTime)
 
-	// Check state to see if booking is possible
+	if cmd.UnitId < 0 || cmd.UnitId > 10 {
+		return ErrInvalidUnitId
+	}
+
+	if cmd.Guests < 1 || cmd.Guests > 5 {
+		return ErrInvalidGuestCount
+	}
+
+	if cmd.Name == "" {
+		return ErrInvalidGuestName
+	}
+
+	today := time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 0, 0, 0, 0, time.UTC)
+
+	if fromTime.After(toTime) || fromTime.Equal(toTime) || fromTime.Before(today) {
+		return ErrInvalidDateRange
+	}
+
+	if !s.State.checkAvailability(cmd.UnitId, fromTime, toTime) {
+		return ErrUnitNotAvailable
+	}
+
+	log.Println(s.State.UnitBookings[cmd.UnitId])
 
 	event := pb.BookingEvent{
 		EventType: pb.EventType_EVENT_TYPE_CREATE_BOOKING,
+		Timestamp: timestamppb.Now(),
 		Id:        ulid.Make().String(),
 		UnitId:    int32(cmd.UnitId),
 		From:      protoTimeFrom,
@@ -74,12 +100,17 @@ func (s *BookingCommandHandler) HandleCreateBookingCommand(cmd CreateBookingComm
 		Name:      cmd.Name,
 	}
 
-	bytes, err := json.Marshal(&event)
+	s.State.LastEventSequenceNumber++
+	event.SequenceNumber = int32(s.State.LastEventSequenceNumber)
+
+	err = s.EventStoreClient.Write(context.Background(), &event)
 	if err != nil {
 		return err
 	}
 
-	err = s.EventStoreClient.Write(context.Background(), &event)
+	s.State.Apply(&event)
+
+	bytes, err := json.Marshal(&event)
 	if err != nil {
 		return err
 	}

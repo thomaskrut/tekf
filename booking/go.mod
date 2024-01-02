@@ -3,6 +3,7 @@ module github.com/thomaskrut/tekf/booking
 go 1.21.4
 
 require (
+	github.com/matryer/is v1.4.1
 	github.com/nats-io/nats.go v1.31.0
 	github.com/oklog/ulid/v2 v2.1.0
 	google.golang.org/grpc v1.60.1

@@ -18,7 +18,7 @@ func NewBookingEventServiceServer() *BookingEventService {
 
 func (b *BookingEventService) WriteBookingEvent(ctx context.Context, req *pb.WriteBookingEventRequest) (*pb.WriteBookingEventResponse, error) {
 	log.Println("WriteBookingEvent RPC", req.BookingEvent)
-	return &pb.WriteBookingEventResponse{}, fmt.Errorf("not implemented")
+	return &pb.WriteBookingEventResponse{}, nil
 }
 
 func (b *BookingEventService) ReadBookingEvent(ctx context.Context, req *pb.ReadBookingEventsRequest) (*pb.ReadBookingEventsResponse, error) {

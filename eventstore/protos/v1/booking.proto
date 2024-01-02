@@ -4,13 +4,15 @@ option go_package = "bookingevent/v1";
 import "google/protobuf/timestamp.proto";
 
 message BookingEvent {
-    EventType event_type = 1;
+    int32 sequence_number = 1;
     string id = 2;
-    int32 unit_id = 3;
-    google.protobuf.Timestamp from = 4;
-    google.protobuf.Timestamp to = 5;
-    int32 guests = 6;
-    string name = 7;
+    google.protobuf.Timestamp timestamp = 3;
+    EventType event_type = 4;
+    int32 unit_id = 5;
+    google.protobuf.Timestamp from = 6;
+    google.protobuf.Timestamp to = 7;
+    int32 guests = 8;
+    string name = 9;
 }
 
 enum EventType {

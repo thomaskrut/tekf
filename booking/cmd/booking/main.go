@@ -41,16 +41,17 @@ func main() {
 		switch msg.Subject {
 		case "command.booking.create":
 			var cmd booking.CreateBookingCommand
+			
 			err = json.Unmarshal(msg.Data, &cmd)
-			log.Println("Received command:", cmd)
 			if err != nil {
 				log.Println("Error:", err)
-				return
 			}
+			
+			log.Println("Received command:", cmd)
+			
 			err := h.HandleCreateBookingCommand(cmd)
 			if err != nil {
 				log.Println("Error:", err)
-				return
 			}
 		}
 	}
