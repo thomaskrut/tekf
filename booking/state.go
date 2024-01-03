@@ -3,10 +3,11 @@ package booking
 import (
 	"time"
 
-	pb "github.com/thomaskrut/tekf/pb/protos/v1"
+	pb "github.com/thomaskrut/tekf/booking/pb/protos/v1"
 )
 
 type Booking struct {
+	Id     string    `json:"id"`
 	From   time.Time `json:"from"`
 	To     time.Time `json:"to"`
 	Guests int       `json:"guests"`
@@ -29,13 +30,14 @@ func (s *State) Apply(event *pb.BookingEvent) {
 
 func (s *State) applyCreateBooking(event *pb.BookingEvent) {
 	booking := Booking{
-		From:   event.GetFrom().AsTime(),
-		To:     event.GetTo().AsTime(),
-		Guests: int(event.GetGuests()),
-		Name:   event.GetName(),
+		Id:     event.Booking.GetId(),
+		From:   event.Booking.From.AsTime(),
+		To:     event.Booking.GetTo().AsTime(),
+		Guests: int(event.Booking.GetGuests()),
+		Name:   event.Booking.GetName(),
 	}
 
-	unitId := int(event.GetUnitId())
+	unitId := int(event.Booking.GetUnitId())
 	if s.UnitBookings == nil {
 		s.UnitBookings = make(UnitBookings)
 	}
@@ -53,26 +55,7 @@ func (s *State) checkAvailability(unitId int, from time.Time, to time.Time) bool
 	}
 
 	for _, booking := range s.UnitBookings[unitId] {
-
-		if booking.From.Equal(from) || booking.To.Equal(to) {
-			return false
-		}
-
-		if booking.From.Before(from) && booking.To.After(from) {
-			return false
-		}
-		if booking.From.Before(to) && booking.To.After(to) {
-			return false
-		}
-		if booking.From.After(from) && booking.To.Before(to) {
-			return false
-		}
-
-		if booking.From.After(from) && booking.From.Before(to) {
-			return false
-		}
-
-		if booking.To.After(from) && booking.To.Before(to) {
+		if booking.From.Before(to) && booking.To.After(from) {
 			return false
 		}
 	}

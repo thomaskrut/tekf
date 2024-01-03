@@ -8,14 +8,18 @@ require (
 	google.golang.org/protobuf v1.32.0
 )
 
+require github.com/gofrs/uuid v4.4.0+incompatible // indirect
+
 require (
+	github.com/EventStore/EventStore-Client-Go/v3 v3.2.1
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/klauspost/compress v1.17.0 // indirect
 	github.com/nats-io/nkeys v0.4.5 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
+	github.com/oklog/ulid/v2 v2.1.0
 	golang.org/x/crypto v0.14.0 // indirect
-	golang.org/x/net v0.16.0 // indirect
+	golang.org/x/net v0.17.0 // indirect
 	golang.org/x/sys v0.13.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20231002182017-d307bd883b97 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20231016165738-49dd2c1f3d0b // indirect
 )

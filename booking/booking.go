@@ -7,9 +7,8 @@ import (
 	"log"
 	"time"
 
-	pb "github.com/thomaskrut/tekf/pb/protos/v1"
-
 	"github.com/oklog/ulid/v2"
+	pb "github.com/thomaskrut/tekf/booking/pb/protos/v1"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -91,18 +90,19 @@ func (s *BookingCommandHandler) HandleCreateBookingCommand(cmd CreateBookingComm
 	log.Println(s.State.UnitBookings[cmd.UnitId])
 
 	event := pb.BookingEvent{
-		EventType: pb.EventType_EVENT_TYPE_CREATE_BOOKING,
-		Timestamp: timestamppb.Now(),
 		Id:        ulid.Make().String(),
-		UnitId:    int32(cmd.UnitId),
-		From:      protoTimeFrom,
-		To:        protoTimeTo,
-		Guests:    int32(cmd.Guests),
-		Name:      cmd.Name,
+		EventType: pb.EventType_EVENT_TYPE_CREATE_BOOKING,
+		Metadata: &pb.Metadata{
+			Timestamp: timestamppb.Now(),
+		},
+		Booking: &pb.Booking{
+			UnitId: int32(cmd.UnitId),
+			From:   protoTimeFrom,
+			To:     protoTimeTo,
+			Guests: int32(cmd.Guests),
+			Name:   cmd.Name,
+		},
 	}
-
-	s.State.LastEventSequenceNumber++
-	event.SequenceNumber = int32(s.State.LastEventSequenceNumber)
 
 	err = s.EventStoreClient.Write(context.Background(), &event)
 	if err != nil {
