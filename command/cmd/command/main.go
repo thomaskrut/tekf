@@ -4,6 +4,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/nats-io/nats.go"
@@ -35,12 +36,19 @@ func CreateBookingHandler(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("Received payload: %s", payload)
 
-	if err = nc.Publish("command.booking.create", payload); err != nil {
+	response, err := nc.Request("command.booking.create", payload, time.Second*3)
+	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Fatal(err)
 	}
 
-	// Wait for reply?
+	log.Println(string(response.Data))
 
-	w.WriteHeader(http.StatusOK)
+	if string(response.Data) != "OK" {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write(response.Data)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
 }

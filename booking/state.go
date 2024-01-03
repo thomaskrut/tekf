@@ -3,7 +3,7 @@ package booking
 import (
 	"time"
 
-	pb "github.com/thomaskrut/tekf/booking/pb/protos/v1"
+	pb "github.com/thomaskrut/tekf/pb/protos/v1"
 )
 
 type Booking struct {

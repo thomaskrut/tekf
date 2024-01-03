@@ -38,21 +38,25 @@ func main() {
 			log.Fatal(err)
 		}
 
+		// TODO: Add update, delete
 		switch msg.Subject {
 		case "command.booking.create":
 			var cmd booking.CreateBookingCommand
-			
+
 			err = json.Unmarshal(msg.Data, &cmd)
 			if err != nil {
 				log.Println("Error:", err)
 			}
-			
+
 			log.Println("Received command:", cmd)
-			
+
 			err := h.HandleCreateBookingCommand(cmd)
 			if err != nil {
+				msg.Respond([]byte(err.Error()))
 				log.Println("Error:", err)
 			}
+
+			msg.Respond([]byte("OK"))
 		}
 	}
 

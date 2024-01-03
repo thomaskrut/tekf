@@ -7,8 +7,9 @@ import (
 	"log"
 	"time"
 
+	pb "github.com/thomaskrut/tekf/pb/protos/v1"
+
 	"github.com/oklog/ulid/v2"
-	pb "github.com/thomaskrut/tekf/booking/pb/protos/v1"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
