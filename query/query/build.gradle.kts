@@ -18,6 +18,7 @@ repositories {
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
 	implementation("org.springframework.boot:spring-boot-starter-web")
+	implementation("com.eventstore:db-client-java:5.2.0")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 
