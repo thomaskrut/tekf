@@ -8,6 +8,7 @@ import (
 
 	"github.com/matryer/is"
 	pb "github.com/thomaskrut/tekf/booking/pb/protos/v1"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var (
@@ -25,7 +26,19 @@ func (m *mockEventStoreClient) Write(context.Context, *pb.BookingEvent) error {
 }
 
 func (m *mockEventStoreClient) ReadAll(context.Context) ([]*pb.BookingEvent, error) {
-	return nil, nil
+	return []*pb.BookingEvent{
+		{
+			EventType: pb.EventType_EVENT_TYPE_CREATE_BOOKING,
+			Booking: &pb.Booking{
+				Id:     "abc123",
+				From:   timestamppb.New(time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 0, 0, 0, 0, time.UTC).AddDate(0, 0, 10)),
+				To:     timestamppb.New(time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 0, 0, 0, 0, time.UTC).AddDate(0, 0, 11)),
+				Guests: 2,
+				Name:   "Mr. Guest",
+				UnitId: 1,
+			},
+		},
+	}, nil
 }
 
 type mockPublisher struct{}
@@ -129,16 +142,43 @@ func TestBookingCommandHandler_HandleCreateBookingCommand(t *testing.T) {
 			is := is.New(t)
 			h := NewBookingCommandHandler(&mockPublisher{}, &mockEventStoreClient{})
 
-			err := h.HandleCreateBookingCommand(CreateBookingCommand{
-				UnitId: 1,
-				From:   futureBookingFrom,
-				To:     futureBookingTo,
-				Guests: 2,
-				Name:   "Mr. Guest",
-			})
+			err := h.HandleCreateBookingCommand(tt.command)
+			if tt.wantErr {
+				is.True(err != nil)
+				is.True(errors.Is(err, tt.wantErrType))
+				return
+			}
 			is.NoErr(err)
+		})
+	}
+}
 
-			err = h.HandleCreateBookingCommand(tt.command)
+func TestBookingCommandHandler_HandleDeleteBookingCommand(t *testing.T) {
+	tests := []struct {
+		name        string
+		command     DeleteBookingCommand
+		wantErr     bool
+		wantErrType error
+	}{
+		{
+			name: "happy path",
+			command: DeleteBookingCommand{
+				Id: "abc123",
+			},
+		},
+		{
+			name: "booking not found",
+			command: DeleteBookingCommand{
+				Id: "xyz456",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			is := is.New(t)
+			h := NewBookingCommandHandler(&mockPublisher{}, &mockEventStoreClient{})
+
+			err := h.HandleDeleteBookingCommand(tt.command)
 			if tt.wantErr {
 				is.True(err != nil)
 				is.True(errors.Is(err, tt.wantErrType))

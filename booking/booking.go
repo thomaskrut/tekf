@@ -19,9 +19,23 @@ var (
 	ErrInvalidDateRange  = fmt.Errorf("invalid date range")
 	ErrUnitNotAvailable  = fmt.Errorf("unit not available")
 	ErrUnableToParseDate = fmt.Errorf("error parsing date value")
+	ErrBookingNotFound   = fmt.Errorf("booking not found")
 )
 
 type CreateBookingCommand struct {
+	UnitId int    `json:"unitId"`
+	From   string `json:"from"`
+	To     string `json:"to"`
+	Guests int    `json:"guests"`
+	Name   string `json:"name"`
+}
+
+type DeleteBookingCommand struct {
+	Id string `json:"id"`
+}
+
+type UpdateBookingCommand struct {
+	Id     string `json:"id"`
 	UnitId int    `json:"unitId"`
 	From   string `json:"from"`
 	To     string `json:"to"`
@@ -72,6 +86,39 @@ func (b *BookingCommandHandler) LoadState() error {
 	}
 
 	return nil
+}
+
+func (b *BookingCommandHandler) HandleDeleteBookingCommand(cmd DeleteBookingCommand) error {
+
+	booking := b.State.getBooking(cmd.Id)
+	if booking == nil {
+		return ErrBookingNotFound
+	}
+
+	event := pb.BookingEvent{
+		EventType: pb.EventType_EVENT_TYPE_DELETE_BOOKING,
+		Metadata: &pb.Metadata{
+			Timestamp: timestamppb.Now(),
+		},
+		Booking: &pb.Booking{
+			Id: cmd.Id,
+		},
+	}
+
+	err := b.EventStoreClient.Write(context.Background(), &event)
+	if err != nil {
+		return err
+	}
+
+	b.State.Apply(&event)
+
+	bytes, err := json.Marshal(&event)
+	if err != nil {
+		return err
+	}
+
+	// No subscribers to this event yet
+	return b.Publisher.Publish("event.booking.delete", bytes)
 }
 
 func (b *BookingCommandHandler) HandleCreateBookingCommand(cmd CreateBookingCommand) error {

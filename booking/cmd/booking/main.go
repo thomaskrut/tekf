@@ -57,6 +57,23 @@ func main() {
 			}
 
 			msg.Respond([]byte("OK"))
+
+		case "command.booking.delete":
+			id := string(msg.Data)
+
+			log.Println("Received delete command for booking id:", id)
+
+			cmd := booking.DeleteBookingCommand{
+				Id: id,
+			}
+
+			err := h.HandleDeleteBookingCommand(cmd)
+			if err != nil {
+				msg.Respond([]byte(err.Error()))
+				log.Println("Error:", err)
+			}
+
+			msg.Respond([]byte("OK"))
 		}
 	}
 
