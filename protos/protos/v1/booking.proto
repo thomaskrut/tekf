@@ -4,9 +4,8 @@ option go_package = "bookingevent/v1";
 import "google/protobuf/timestamp.proto";
 
 message BookingEvent {
-    string id = 1;
-    EventType event_type = 4;
     Metadata metadata = 2;
+    EventType event_type = 4;
     Booking booking = 5;
 }
 
@@ -39,7 +38,6 @@ message WriteBookingEventResponse {
 }
 
 message ReadBookingEventsRequest {
-    int32 unit_id = 1;
     int32 last_known_event_id = 2;
 }
 

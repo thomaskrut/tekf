@@ -35,6 +35,7 @@ type publisher interface {
 
 type eventStoreClient interface {
 	Write(context.Context, *pb.BookingEvent) error
+	ReadAll(context.Context) ([]*pb.BookingEvent, error)
 }
 
 type BookingCommandHandler struct {
@@ -44,14 +45,36 @@ type BookingCommandHandler struct {
 }
 
 func NewBookingCommandHandler(p publisher, e eventStoreClient) *BookingCommandHandler {
-	return &BookingCommandHandler{
+
+	handler := &BookingCommandHandler{
 		Publisher:        p,
 		EventStoreClient: e,
-		State:            State{},
 	}
+
+	err := handler.LoadState()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return handler
 }
 
-func (s *BookingCommandHandler) HandleCreateBookingCommand(cmd CreateBookingCommand) error {
+func (b *BookingCommandHandler) LoadState() error {
+
+	events, err := b.EventStoreClient.ReadAll(context.Background())
+	if err != nil {
+		return err
+	}
+
+	for _, event := range events {
+		log.Println(event)
+		b.State.Apply(event)
+	}
+
+	return nil
+}
+
+func (b *BookingCommandHandler) HandleCreateBookingCommand(cmd CreateBookingCommand) error {
 
 	fromTime, err := time.Parse("2006-01-02", cmd.From)
 	if err != nil {
@@ -83,19 +106,19 @@ func (s *BookingCommandHandler) HandleCreateBookingCommand(cmd CreateBookingComm
 		return ErrInvalidDateRange
 	}
 
-	if !s.State.checkAvailability(cmd.UnitId, fromTime, toTime) {
+	if !b.State.checkAvailability(cmd.UnitId, fromTime, toTime) {
 		return ErrUnitNotAvailable
 	}
 
-	log.Println(s.State.UnitBookings[cmd.UnitId])
+	log.Println(b.State.UnitBookings[cmd.UnitId])
 
 	event := pb.BookingEvent{
-		Id:        ulid.Make().String(),
 		EventType: pb.EventType_EVENT_TYPE_CREATE_BOOKING,
 		Metadata: &pb.Metadata{
 			Timestamp: timestamppb.Now(),
 		},
 		Booking: &pb.Booking{
+			Id:     ulid.Make().String(),
 			UnitId: int32(cmd.UnitId),
 			From:   protoTimeFrom,
 			To:     protoTimeTo,
@@ -104,17 +127,17 @@ func (s *BookingCommandHandler) HandleCreateBookingCommand(cmd CreateBookingComm
 		},
 	}
 
-	err = s.EventStoreClient.Write(context.Background(), &event)
+	err = b.EventStoreClient.Write(context.Background(), &event)
 	if err != nil {
 		return err
 	}
 
-	s.State.Apply(&event)
+	b.State.Apply(&event)
 
 	bytes, err := json.Marshal(&event)
 	if err != nil {
 		return err
 	}
 
-	return s.Publisher.Publish("event.booking.create", bytes)
+	return b.Publisher.Publish("event.booking.create", bytes)
 }

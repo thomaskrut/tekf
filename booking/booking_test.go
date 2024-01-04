@@ -24,6 +24,10 @@ func (m *mockEventStoreClient) Write(context.Context, *pb.BookingEvent) error {
 	return nil
 }
 
+func (m *mockEventStoreClient) ReadAll(context.Context) ([]*pb.BookingEvent, error) {
+	return nil, nil
+}
+
 type mockPublisher struct{}
 
 func (m *mockPublisher) Publish(string, []byte) error {
