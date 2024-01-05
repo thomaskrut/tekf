@@ -5,6 +5,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import com.thomaskrut.query.Model.CalendarModel;
 
+import java.util.concurrent.ExecutionException;
+
 @Controller
 public class CalendarController {
 
@@ -14,7 +16,10 @@ public class CalendarController {
         this.calendarModel = calendarModel;
     }
     @RequestMapping("/calendar")
-    public String calendar(Model model) {
+    public String calendar(Model model) throws ExecutionException, InterruptedException {
+
+        calendarModel.update();
+
         model.addAttribute("days", calendarModel.getCalendar().getDays());
         model.addAttribute("units", calendarModel.getCalendar().getUnits());
         return "calendar.html";
