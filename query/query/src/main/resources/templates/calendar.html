@@ -1,14 +1,94 @@
 <html>
 <head>
     <title>Calendar</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 </head>
 
 <body>
 
-<div th:each="booking : ${bookings}">
-    <span th:text="${booking.getId()}"></span>
-</div>
+<table class="table table-bordered table-hover">
+    <tr>
+        <th> </th>
+        <th scope="col" th:each="unit : ${units}" th:text="${unit}"></th>
+    </tr>
+
+    <tr th:each="day : ${days}">
+
+
+        <th scope="row" th:utext="${day.getDate() + '<br>' + day.getWeekday()}">
+        </th>
+
+        <td th:each="unit : ${units}" th:id="${unit + '-' + day.getDate()}" class="date-cell" th:classappend="${day.getBookings().get(unit).getId() != '' ? 'table-warning' : 'table-default'}">
+
+        </td>
+
+    </tr>
+
+</table>
+
+<script>
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var selectedDates = [];
+        var selectedUnit = null;
+        var selectionMade = false;
+
+        function clickDate(td) {
+            if (selectionMade) {
+                selectedDates.forEach(d => d.td.classList.remove('table-success'));
+                selectedDates = [];
+                selectionMade = false;
+            }
+
+            if (selectedDates.length === 0 && td.classList.contains('table-default')) {
+                td.classList.add('table-success');
+                const parts = td.id.split('-');
+                const newDate = {
+                    unit: parts[0],
+                    year: parts[1],
+                    month: parts[2],
+                    day: parts[3],
+                    td: td,
+                };
+                selectedDates.push(newDate);
+                selectedUnit = td.id.split('-')[0];
+            } else {
+                selectionMade = true;
+            }
+        }
+
+        function hoverDate(td) {
+            const parts = td.id.split('-');
+            const newDate = {
+                unit: parts[0],
+                year: parts[1],
+                month: parts[2],
+                day: parts[3],
+                td: td,
+            };
+
+            if (!selectionMade && selectedDates.length !== 0 && td.classList.contains('table-default') && newDate.unit === selectedUnit) {
+                td.classList.add('table-success');
+                selectedDates.push(newDate);
+            } else if (!selectionMade) {
+                selectedDates.forEach(d => d.td.classList.remove('table-success'));
+                selectedDates = [];
+            }
+        }
+
+        var cells = document.querySelectorAll('.date-cell');
+        cells.forEach(cell => {
+            cell.addEventListener('click', function() {
+                clickDate(this);
+            });
+
+            cell.addEventListener('mouseenter', function() {
+                hoverDate(this);
+            });
+        });
+    });
+
+</script>
 
 </body>
 

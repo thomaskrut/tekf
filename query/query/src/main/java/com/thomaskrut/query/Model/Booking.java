@@ -8,16 +8,22 @@ import java.time.LocalDate;
 public class Booking {
     @JsonProperty("id")
     private String Id;
-    @JsonIgnore
-    private LocalDate from;
-    @JsonIgnore
-    private LocalDate to;
+    @JsonProperty("from")
+    private String from;
+    @JsonProperty("to")
+    private String to;
     @JsonProperty("guests")
     private int guests;
     @JsonProperty("name")
     private String name;
     @JsonProperty("unit_id")
     private int unitId;
+
+    public static Booking emptyBooking(String bookingId) {
+        Booking booking = new Booking();
+        booking.setId(bookingId);
+        return booking;
+    }
 
     public String getId() {
         return Id;
@@ -27,19 +33,19 @@ public class Booking {
         Id = id;
     }
 
-    public LocalDate getFrom() {
+    public String getFrom() {
         return from;
     }
 
-    public void setFrom(LocalDate from) {
+    public void setFrom(String from) {
         this.from = from;
     }
 
-    public LocalDate getTo() {
+    public String getTo() {
         return to;
     }
 
-    public void setTo(LocalDate to) {
+    public void setTo(String to) {
         this.to = to;
     }
 
@@ -65,5 +71,13 @@ public class Booking {
 
     public void setUnitId(int unitId) {
         this.unitId = unitId;
+    }
+
+    public LocalDate getFromAsDate() {
+        return LocalDate.parse(from);
+    }
+
+    public LocalDate getToAsDate() {
+        return LocalDate.parse(to);
     }
 }

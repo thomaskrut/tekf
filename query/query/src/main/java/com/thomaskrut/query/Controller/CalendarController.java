@@ -15,7 +15,8 @@ public class CalendarController {
     }
     @RequestMapping("/calendar")
     public String calendar(Model model) {
-        model.addAttribute("calendar", calendarModel.getBookings());
+        model.addAttribute("days", calendarModel.getCalendar().getDays());
+        model.addAttribute("units", calendarModel.getCalendar().getUnits());
         return "calendar.html";
     }
 
