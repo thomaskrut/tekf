@@ -9,9 +9,11 @@ import (
 	"github.com/thomaskrut/tekf/booking/client"
 )
 
+var natsUrl = "nats://nats:4222"
+
 func main() {
 
-	nc, err := nats.Connect(nats.DefaultURL)
+	nc, err := nats.Connect(natsUrl)
 	if err != nil {
 		log.Fatal(err)
 	}

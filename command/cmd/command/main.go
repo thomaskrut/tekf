@@ -10,6 +10,8 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
+var natsUrl = "nats://nats:4222"
+
 func main() {
 
 	r := chi.NewRouter()
@@ -24,7 +26,7 @@ func main() {
 }
 
 func DeleteBookingHandler(w http.ResponseWriter, r *http.Request) {
-	nc, err := nats.Connect(nats.DefaultURL)
+	nc, err := nats.Connect(natsUrl)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -52,7 +54,7 @@ func DeleteBookingHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreateBookingHandler(w http.ResponseWriter, r *http.Request) {
-	nc, err := nats.Connect(nats.DefaultURL)
+	nc, err := nats.Connect(natsUrl)
 	if err != nil {
 		log.Fatal(err)
 	}

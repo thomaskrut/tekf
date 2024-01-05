@@ -2,6 +2,7 @@ package com.thomaskrut.query.Model;
 
 import com.eventstore.dbclient.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -11,18 +12,17 @@ import java.util.concurrent.ExecutionException;
 @Service
 public class CalendarModel {
 
-    private final EventStoreDBClient client;
-    private final Calendar calendar;
-    private final HashMap<String, Booking> bookings;
+    private EventStoreDBClient client;
+    private Calendar calendar;
+    private HashMap<String, Booking> bookings;
+
+    @Value("${eventstore-db.url}")
+    private String eventstoreDbUrl;
 
     private long lastKnownRevision;
 
-    public CalendarModel() throws ExecutionException, InterruptedException {
-        EventStoreDBClientSettings settings = EventStoreDBConnectionString.parseOrThrow("esdb://localhost:2113?tls=false");
-        this.client = EventStoreDBClient.create(settings);
-        this.calendar = new Calendar();
-        this.bookings = new HashMap<>();
-        readStream(0);
+    public CalendarModel() {
+        this.lastKnownRevision = 0;
     }
 
     public Calendar getCalendar() {
@@ -31,6 +31,13 @@ public class CalendarModel {
 
 
     public void readStream(long fromRevision) throws ExecutionException, InterruptedException {
+
+        if (this.client == null) {
+            EventStoreDBClientSettings settings = EventStoreDBConnectionString.parseOrThrow(this.eventstoreDbUrl);
+            this.client = EventStoreDBClient.create(settings);
+            this.calendar = new Calendar();
+            this.bookings = new HashMap<>();
+        }
 
         ReadStreamOptions options = ReadStreamOptions.get()
                 .forwards()

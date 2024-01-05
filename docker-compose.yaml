@@ -2,11 +2,41 @@ version: "3.4"
 
 services:
 
-  #command-service:
-  #  container_name: command-service
-  #  build:
-  #    context: ./command
-  #    dockerfile: Dockerfile
+  query-service:
+    build:
+      context: ./query/query
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "8081:8081"
+    container_name: query-service
+    environment:
+      EVENTSTORE_DB_URL: esdb://eventstore-db:2113?tls=false
+
+  command-service:
+    container_name: command-service
+    build:
+      context: ./command
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    restart: always
+
+  booking-service:
+    container_name: booking-service
+    build:
+      context: ./booking
+      dockerfile: Dockerfile
+    restart: always
+
+  eventstore-service:
+    container_name: eventstore-service
+    build:
+      context: ./eventstore
+      dockerfile: Dockerfile
+    ports:
+      - "9090:9090"
+    restart: always
 
   nats:
     image: nats:latest
@@ -18,7 +48,7 @@ services:
 
   eventstore.db:
     image: eventstore/eventstore:23.10.0-bookworm-slim
-    container_name: eventstore.db
+    container_name: eventstore-db
     environment:
       - EVENTSTORE_CLUSTER_SIZE=1
       - EVENTSTORE_RUN_PROJECTIONS=All
