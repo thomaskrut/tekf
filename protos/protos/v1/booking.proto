@@ -11,8 +11,8 @@ message BookingEvent {
 
 message Booking {
     string id = 1;
-    google.protobuf.Timestamp from = 2;
-    google.protobuf.Timestamp to = 3;
+    string from = 2;
+    string to = 3;
     int32 guests = 4;
     string name = 5;
     int32 unit_id = 6;

@@ -23,20 +23,21 @@ type State struct {
 	UnitBookings            UnitBookings
 }
 
-func (s *State) Apply(event *pb.BookingEvent) {
+func (s *State) Apply(event *pb.BookingEvent) error {
 	switch event.EventType {
 	case pb.EventType_EVENT_TYPE_CREATE_BOOKING:
-		s.applyCreateBooking(event)
+		return s.applyCreateBooking(event)
 	case pb.EventType_EVENT_TYPE_DELETE_BOOKING:
-		s.applyDeleteBooking(event)
+		return s.applyDeleteBooking(event)
 	}
+	return nil
 }
 
-func (s *State) applyDeleteBooking(event *pb.BookingEvent) {
+func (s *State) applyDeleteBooking(event *pb.BookingEvent) error {
 	booking := s.getBooking(event.Booking.GetId())
 	if booking == nil {
 		log.Println("Illegal state: Booking not found")
-		return
+		return nil
 	}
 
 	unitId := booking.UnitId
@@ -48,13 +49,26 @@ func (s *State) applyDeleteBooking(event *pb.BookingEvent) {
 			break
 		}
 	}
+
+	return nil
 }
 
-func (s *State) applyCreateBooking(event *pb.BookingEvent) {
+func (s *State) applyCreateBooking(event *pb.BookingEvent) error {
+
+	fromTime, err := time.Parse("2006-01-02", event.Booking.From)
+	if err != nil {
+		return ErrUnableToParseDate
+	}
+
+	toTime, err := time.Parse("2006-01-02", event.Booking.To)
+	if err != nil {
+		return ErrUnableToParseDate
+	}
+
 	booking := Booking{
 		Id:     event.Booking.GetId(),
-		From:   event.Booking.From.AsTime(),
-		To:     event.Booking.GetTo().AsTime(),
+		From:   fromTime,
+		To:     toTime,
 		Guests: int(event.Booking.GetGuests()),
 		Name:   event.Booking.GetName(),
 		UnitId: int(event.Booking.GetUnitId()),
@@ -66,6 +80,8 @@ func (s *State) applyCreateBooking(event *pb.BookingEvent) {
 	}
 
 	s.UnitBookings[unitId] = append(s.UnitBookings[unitId], booking)
+
+	return nil
 }
 
 func (s *State) checkAvailability(unitId int, from time.Time, to time.Time) bool {

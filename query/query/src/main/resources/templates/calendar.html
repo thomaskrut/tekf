@@ -1,0 +1,15 @@
+<html>
+<head>
+    <title>Calendar</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+</head>
+
+<body>
+
+<div th:each="booking : ${bookings}">
+    <span th:text="${booking.getId()}"></span>
+</div>
+
+</body>
+
+</html>

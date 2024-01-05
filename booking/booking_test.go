@@ -8,7 +8,6 @@ import (
 
 	"github.com/matryer/is"
 	pb "github.com/thomaskrut/tekf/booking/pb/protos/v1"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var (
@@ -31,8 +30,8 @@ func (m *mockEventStoreClient) ReadAll(context.Context) ([]*pb.BookingEvent, err
 			EventType: pb.EventType_EVENT_TYPE_CREATE_BOOKING,
 			Booking: &pb.Booking{
 				Id:     "abc123",
-				From:   timestamppb.New(time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 0, 0, 0, 0, time.UTC).AddDate(0, 0, 10)),
-				To:     timestamppb.New(time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 0, 0, 0, 0, time.UTC).AddDate(0, 0, 11)),
+				From:   time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 0, 0, 0, 0, time.UTC).AddDate(0, 0, 10).Format("2006-01-02"),
+				To:     time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 0, 0, 0, 0, time.UTC).AddDate(0, 0, 11).Format("2006-01-02"),
 				Guests: 2,
 				Name:   "Mr. Guest",
 				UnitId: 1,
@@ -171,6 +170,8 @@ func TestBookingCommandHandler_HandleDeleteBookingCommand(t *testing.T) {
 			command: DeleteBookingCommand{
 				Id: "xyz456",
 			},
+			wantErr:     true,
+			wantErrType: ErrBookingNotFound,
 		},
 	}
 	for _, tt := range tests {

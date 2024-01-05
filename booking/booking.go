@@ -110,7 +110,9 @@ func (b *BookingCommandHandler) HandleDeleteBookingCommand(cmd DeleteBookingComm
 		return err
 	}
 
-	b.State.Apply(&event)
+	if err = b.State.Apply(&event); err != nil {
+		return err
+	}
 
 	bytes, err := json.Marshal(&event)
 	if err != nil {
@@ -127,13 +129,11 @@ func (b *BookingCommandHandler) HandleCreateBookingCommand(cmd CreateBookingComm
 	if err != nil {
 		return ErrUnableToParseDate
 	}
-	protoTimeFrom := timestamppb.New(fromTime)
 
 	toTime, err := time.Parse("2006-01-02", cmd.To)
 	if err != nil {
 		return ErrUnableToParseDate
 	}
-	protoTimeTo := timestamppb.New(toTime)
 
 	if cmd.UnitId < 0 || cmd.UnitId > 10 {
 		return ErrInvalidUnitId
@@ -167,8 +167,8 @@ func (b *BookingCommandHandler) HandleCreateBookingCommand(cmd CreateBookingComm
 		Booking: &pb.Booking{
 			Id:     ulid.Make().String(),
 			UnitId: int32(cmd.UnitId),
-			From:   protoTimeFrom,
-			To:     protoTimeTo,
+			From:   fromTime.Format("2006-01-02"),
+			To:     toTime.Format("2006-01-02"),
 			Guests: int32(cmd.Guests),
 			Name:   cmd.Name,
 		},
@@ -179,7 +179,9 @@ func (b *BookingCommandHandler) HandleCreateBookingCommand(cmd CreateBookingComm
 		return err
 	}
 
-	b.State.Apply(&event)
+	if err = b.State.Apply(&event); err != nil {
+		return err
+	}
 
 	bytes, err := json.Marshal(&event)
 	if err != nil {
