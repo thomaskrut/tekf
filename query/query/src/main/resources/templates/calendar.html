@@ -1,34 +1,136 @@
 <html>
+
 <head>
     <title>Calendar</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 </head>
 
 <body>
 
-<table class="table table-bordered table-hover">
-    <tr>
-        <th> </th>
-        <th scope="col" th:each="unit : ${units}" th:text="${unit}"></th>
-    </tr>
+    <div x-data="{
+    unitId: null,
+    fromDate: null,
+    toDate: null,
+    fromDateParts: null,
+    selectedCells: [],
+    lastCell: null,
+    selectionMade: false,
 
-    <tr th:each="day : ${days}">
+    clickDate: function(td) {
+
+        if (this.selectionMade) {
+            this.selectionMade = false
+            this.clear()
+        }
+
+        if (this.fromDate === null) {
+        const parts = td.id.split('-')
+        this.fromDateParts = parts
+        this.unitId = parts[0];
+        this.fromDate = parts[1] + '-' + parts[2] + '-' + parts[3]
+        td.classList.add('table-success')
+        this.selectedCells.push(td)
+        } else if (this.toDate === null) {
+            this.clear()
+        } else {
+            this.selectionMade = true
+        }
+
+    },
+
+    hoverDate: function(td) {
+
+        if (this.selectionMade) return
+        if (this.fromDate === null) return
+
+        const parts = td.id.split('-')
+        unitId = parts[0];
+
+        if (this.unitId !== unitId) {
+            this.clear()
+            return
+        }
+
+        if (Number(this.fromDateParts[4]) > Number(parts[4])) {
+            this.clear()
+            return
+        }
+
+        if (td.classList.contains('table-success')) {
+            this.lastCell.classList.remove('table-success')
+            this.toDate = parts[1] + '-' + parts[2] + '-' + parts[3]
+            if (this.toDate == this.fromDate) this.toDate = null
+            this.lastCell = td
+            return
+        }
+
+        if (this.lastCell !== null && this.lastCell.classList.contains('table-warning') && Number(this.fromDateParts[4]) < Number(parts[4])) {
+            this.clear()
+            return
+        }
+
+        if (td.classList.contains('table-warning') && Number(this.fromDateParts[4]) < Number(parts[4])) {
+            td.classList.add('table-success')
+            this.toDate = parts[1] + '-' + parts[2] + '-' + parts[3]
+            this.lastCell = td
+            this.selectedCells.push(td)
+            return
+        }
+
+        if (!td.classList.contains('table-success') && Number(this.fromDateParts[4]) < Number(parts[4])) {
+            this.lastCell = td
+            td.classList.add('table-success')
+            this.toDate = parts[1] + '-' + parts[2] + '-' + parts[3]
+            this.selectedCells.push(td)
+            return
+        }
+    },
+
+    clear: function() {
+        this.selectedCells.forEach(cell => {
+            cell.classList.remove('table-success')
+        })
+        this.fromDate = null
+        this.toDate = null
+        this.unitId = null
+        this.lastCell = null
+    }
+
+    }">
+
+        <p>Unit: <span x-text="unitId"></span></p>
+        <p>From: <span x-text="fromDate"></span></p>
+        <p>To: <span x-text="toDate"></span></p>
 
 
-        <th scope="row" th:utext="${day.getDate() + '<br>' + day.getWeekday()}">
-        </th>
+        <table class="table table-bordered table-hover">
+            <tr>
+                <th></th>
+                <th scope="col" th:each="unit : ${units}" th:text="${unit}"></th>
+            </tr>
 
-        <td th:each="unit : ${units}" th:id="${unit + '-' + day.getDate()}" class="date-cell" th:classappend="${day.getBookings().get(unit).getId() != '' ? 'table-warning' : 'table-default'}">
+            <tr th:each="day, iStat : ${days}">
 
-        </td>
 
-    </tr>
+                <th scope="row" th:utext="${day.getWeekday() + '<br>' + day.getDate()}">
+                </th>
 
-</table>
+                <td @mouseenter="hoverDate($event.target)" @click="clickDate($event.target)" th:each="unit : ${units}"
+                    th:id="${unit + '-' + day.getDate() + '-' + iStat.index}" class="date-cell"
+                    th:classappend="${day.getBookings().get(unit).getId() != '' ? 'table-warning' : 'table-default'}">
+                </td>
 
-<script>
+            </tr>
 
-    document.addEventListener('DOMContentLoaded', function() {
+        </table>
+
+    </div>
+
+    <!-- <script>
+
+    document.addEventListener('DOMContentLoaded', function () {
         var selectedDates = [];
         var selectedUnit = null;
         var selectionMade = false;
@@ -78,17 +180,17 @@
 
         var cells = document.querySelectorAll('.date-cell');
         cells.forEach(cell => {
-            cell.addEventListener('click', function() {
+            cell.addEventListener('click', function () {
                 clickDate(this);
             });
 
-            cell.addEventListener('mouseenter', function() {
+            cell.addEventListener('mouseenter', function () {
                 hoverDate(this);
             });
         });
     });
 
-</script>
+</script> -->
 
 </body>
 

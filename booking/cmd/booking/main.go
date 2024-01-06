@@ -26,7 +26,6 @@ func main() {
 	defer sub.Unsubscribe()
 
 	c := client.New()
-	defer c.Close()
 
 	h := booking.NewBookingCommandHandler(nc, c)
 

@@ -11,36 +11,47 @@ import (
 	pb "github.com/thomaskrut/tekf/booking/pb/protos/v1"
 )
 
+var eventStoreServiceUrl = "eventstore-service:9090"
+
 type Client struct {
-	connection *grpc.ClientConn
-	pb.BookingEventServiceClient
 }
 
 func New() *Client {
-	conn, err := grpc.Dial("eventstore-service:9090", grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		panic(err)
-	}
-	return &Client{
-		connection:                conn,
-		BookingEventServiceClient: pb.NewBookingEventServiceClient(conn),
-	}
+	return &Client{}
 }
 
 func (c *Client) Write(ctx context.Context, event *pb.BookingEvent) error {
+
+	conn, err := grpc.Dial(eventStoreServiceUrl, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		panic(err)
+	}
+	defer conn.Close()
+
+	client := pb.NewBookingEventServiceClient(conn)
+
 	req := &pb.WriteBookingEventRequest{
 		BookingEvent: event,
 	}
-	_, err := c.BookingEventServiceClient.WriteBookingEvent(ctx, req)
+	_, err = client.WriteBookingEvent(ctx, req)
 	return err
 }
 
 func (c *Client) ReadAll(ctx context.Context) ([]*pb.BookingEvent, error) {
+
+	conn, err := grpc.Dial(eventStoreServiceUrl, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		panic(err)
+	}
+	defer conn.Close()
+
+	client := pb.NewBookingEventServiceClient(conn)
+
 	req := &pb.ReadBookingEventsRequest{
 		LastKnownEventId: 0,
 	}
 
-	stream, err := c.BookingEventServiceClient.ReadBookingEvents(ctx, req)
+	stream, err := client.ReadBookingEvents(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("error getting stream: %w", err)
 	}
@@ -59,8 +70,4 @@ func (c *Client) ReadAll(ctx context.Context) ([]*pb.BookingEvent, error) {
 	}
 
 	return events, nil
-}
-
-func (c *Client) Close() {
-	c.connection.Close()
 }
