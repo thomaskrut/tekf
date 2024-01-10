@@ -84,7 +84,7 @@ func (s *State) applyCreateBooking(event *pb.BookingEvent) error {
 	return nil
 }
 
-func (s *State) checkAvailability(unitId int, from time.Time, to time.Time) bool {
+func (s *State) checkAvailability(unitId int, from time.Time, to time.Time, excludeId string) bool {
 	if s.UnitBookings == nil {
 		return true
 	}
@@ -94,6 +94,9 @@ func (s *State) checkAvailability(unitId int, from time.Time, to time.Time) bool
 	}
 
 	for _, booking := range s.UnitBookings[unitId] {
+		if booking.Id == excludeId {
+			continue
+		}
 		if booking.From.Before(to) && booking.To.After(from) {
 			return false
 		}

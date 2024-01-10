@@ -29,12 +29,10 @@ public class Calendar {
     }
 
     public void addBooking(Booking booking) {
-        days.stream().
-                filter(day ->
-                         day.getDate().isEqual(booking.getFromAsDate())
-                        || (day.getDate().isAfter(booking.getFromAsDate()) && day.getDate().isBefore(booking.getToAsDate()))).
-                forEach(day -> {
-                            day.addBooking(booking);
+        days.stream().filter(day -> day.getDate().isEqual(booking.getFromAsDate())
+                || (day.getDate().isAfter(booking.getFromAsDate()) && day.getDate().isBefore(booking.getToAsDate())))
+                .forEach(day -> {
+                    day.addBooking(booking);
                 });
     }
 
@@ -49,11 +47,14 @@ class Day {
 
     private String weekday;
     private HashMap<Integer, Booking> bookings;
+    private boolean isFirstDayOfMonth;
 
     public Day(LocalDate date, List<Integer> units) {
         this.date = date;
 
         this.weekday = date.getDayOfWeek().name();
+
+        this.isFirstDayOfMonth = date.getDayOfMonth() == 1;
 
         bookings = new HashMap<>();
         units.forEach(u -> {
@@ -67,6 +68,10 @@ class Day {
 
     public String getWeekday() {
         return weekday;
+    }
+
+    public boolean isFirstDayOfMonth() {
+        return isFirstDayOfMonth;
     }
 
     public void setBookings(HashMap<Integer, Booking> bookings) {

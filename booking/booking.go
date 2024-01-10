@@ -55,7 +55,7 @@ type eventStoreClient interface {
 type BookingCommandHandler struct {
 	Publisher        publisher
 	EventStoreClient eventStoreClient
-	State            State
+	State            *State
 }
 
 func NewBookingCommandHandler(p publisher, e eventStoreClient) *BookingCommandHandler {
@@ -65,15 +65,16 @@ func NewBookingCommandHandler(p publisher, e eventStoreClient) *BookingCommandHa
 		EventStoreClient: e,
 	}
 
-	err := handler.LoadState()
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	return handler
 }
 
 func (b *BookingCommandHandler) LoadState() error {
+
+	if b.State != nil {
+		return nil
+	}
+
+	b.State = &State{}
 
 	events, err := b.EventStoreClient.ReadAll(context.Background())
 	if err != nil {
@@ -153,11 +154,9 @@ func (b *BookingCommandHandler) HandleCreateBookingCommand(cmd CreateBookingComm
 		return ErrInvalidDateRange
 	}
 
-	if !b.State.checkAvailability(cmd.UnitId, fromTime, toTime) {
+	if !b.State.checkAvailability(cmd.UnitId, fromTime, toTime, "") {
 		return ErrUnitNotAvailable
 	}
-
-	log.Println(b.State.UnitBookings[cmd.UnitId])
 
 	event := pb.BookingEvent{
 		EventType: pb.EventType_EVENT_TYPE_CREATE_BOOKING,
@@ -189,4 +188,75 @@ func (b *BookingCommandHandler) HandleCreateBookingCommand(cmd CreateBookingComm
 	}
 
 	return b.Publisher.Publish("event.booking.create", bytes)
+}
+
+func (b *BookingCommandHandler) HandleUpdateBookingCommand(cmd UpdateBookingCommand) error {
+
+	booking := b.State.getBooking(cmd.Id)
+	if booking == nil {
+		return ErrBookingNotFound
+	}
+
+	fromTime, err := time.Parse("2006-01-02", cmd.From)
+	if err != nil {
+		return ErrUnableToParseDate
+	}
+
+	toTime, err := time.Parse("2006-01-02", cmd.To)
+	if err != nil {
+		return ErrUnableToParseDate
+	}
+
+	if cmd.UnitId < 0 || cmd.UnitId > 10 {
+		return ErrInvalidUnitId
+	}
+
+	if cmd.Guests < 1 || cmd.Guests > 5 {
+		return ErrInvalidGuestCount
+	}
+
+	if cmd.Name == "" {
+		return ErrInvalidGuestName
+	}
+
+	today := time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 0, 0, 0, 0, time.UTC)
+
+	if fromTime.After(toTime) || fromTime.Equal(toTime) || fromTime.Before(today) {
+		return ErrInvalidDateRange
+	}
+
+	if !b.State.checkAvailability(cmd.UnitId, fromTime, toTime, cmd.Id) {
+		return ErrUnitNotAvailable
+	}
+
+	event := pb.BookingEvent{
+		EventType: pb.EventType_EVENT_TYPE_CREATE_BOOKING,
+		Metadata: &pb.Metadata{
+			Timestamp: timestamppb.Now(),
+		},
+		Booking: &pb.Booking{
+			Id:     cmd.Id,
+			UnitId: int32(cmd.UnitId),
+			From:   fromTime.Format("2006-01-02"),
+			To:     toTime.Format("2006-01-02"),
+			Guests: int32(cmd.Guests),
+			Name:   cmd.Name,
+		},
+	}
+
+	err = b.EventStoreClient.Write(context.Background(), &event)
+	if err != nil {
+		return err
+	}
+
+	if err = b.State.Apply(&event); err != nil {
+		return err
+	}
+
+	bytes, err := json.Marshal(&event)
+	if err != nil {
+		return err
+	}
+
+	return b.Publisher.Publish("event.booking.update", bytes)
 }

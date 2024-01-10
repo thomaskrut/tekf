@@ -172,7 +172,7 @@ func TestState_checkAvailability(t *testing.T) {
 			s := &State{
 				UnitBookings: tt.bookings,
 			}
-			is.Equal(s.checkAvailability(1, tt.from, tt.to), tt.want)
+			is.Equal(s.checkAvailability(1, tt.from, tt.to, "someRandomId"), tt.want)
 		})
 	}
 }

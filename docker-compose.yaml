@@ -12,6 +12,7 @@ services:
     container_name: query-service
     environment:
       EVENTSTORE_DB_URL: esdb://eventstore-db:2113?tls=false
+      SERVER_PORT: 8081
 
   command-service:
     container_name: command-service
@@ -35,16 +36,16 @@ services:
       context: ./eventstore
       dockerfile: Dockerfile
     ports:
-      - "9090:9090"
+      - "9090"
     restart: always
 
   nats:
     image: nats:latest
     container_name: nats
     ports:
-      - "4222:4222"
-      - "6222:6222"
-      - "8222:8222"
+      - "4222"
+      - "6222"
+      - "8222"
 
   eventstore.db:
     image: eventstore/eventstore:23.10.0-bookworm-slim
@@ -59,7 +60,7 @@ services:
       - EVENTSTORE_ENABLE_EXTERNAL_TCP=true
       - EVENTSTORE_ENABLE_ATOM_PUB_OVER_HTTP=true
     ports:
-      - "1113:1113"
+      - "1113"
       - "2113:2113"
     volumes:
       - type: volume

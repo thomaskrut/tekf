@@ -5,11 +5,12 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css"
         integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" th:href="@{/assets/css/style.css}" />
 </head>
 
-<body>
-
-    <div x-data="{
+<body x-data="{
+    name: '',
+    guests: 1,
     unitId: null,
     fromDate: null,
     toDate: null,
@@ -25,7 +26,7 @@
             this.clear()
         }
 
-        if (this.fromDate === null) {
+        if (this.fromDate === null && !td.classList.contains('table-warning')) {
         const parts = td.id.split('-')
         this.fromDateParts = parts
         this.unitId = parts[0];
@@ -36,6 +37,7 @@
             this.clear()
         } else {
             this.selectionMade = true
+            td.classList.remove('table-success')
         }
 
     },
@@ -96,101 +98,96 @@
         this.toDate = null
         this.unitId = null
         this.lastCell = null
+    },
+
+    post: function() {
+        if (this.fromDate === null || this.toDate === null) return
+        const data = {
+            name: this.name,
+            unitId: Number(this.unitId),
+            from: this.fromDate,
+            to: this.toDate,
+            guests: Number(this.guests)
+        }
+        fetch('http://localhost:8080/booking', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        }).then(response => {
+            if (response.ok) {
+                this.clear()
+                this.fromDateParts = null
+                this.selectionMade = false
+                this.selectedCells = []
+                this.lastCell = null
+                window.location.reload()
+            } else {
+                alert('Booking failed: ' + response.status)
+            }
+        })
     }
 
     }">
+    <nav class="navbar navbar-light bg-light fixed-top">
+        <div class="container-fluid">
+            <form class="form-inline" @submit.prevent="post()">
 
-        <p>Unit: <span x-text="unitId"></span></p>
-        <p>From: <span x-text="fromDate"></span></p>
-        <p>To: <span x-text="toDate"></span></p>
+                <label for="unitId">Unit: </label>
+                <input x-model="unitId" class="form-control form-control-sm m-2" type="text" aria-label="unitId"
+                    readonly>
+
+                <label for="fromDate">Check in: </label>
+                <input x-model="fromDate" class="col-auto form-control form-control-sm m-2" type="text"
+                    aria-label="fromDate" readonly>
+
+                <label for="toDate">Check out: </label>
+                <input x-model="toDate" class="form-control form-control-sm m-2" type="text" aria-label="toDate"
+                    readonly>
+
+                <label for="guests">Guests: </label>
+                <input x-model="guests" class="form-control form-control-sm m-2" type="text" aria-label="toDate">
+
+                <label for="guests">Name: </label>
+                <input x-model="name" class="form-control form-control-sm m-2" type="text" aria-label="name">
+
+                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Confirm</button>
+            </form>
+        </div>
+        <div class="container-fluid">
+            <table class="table table-hover m-0">
+                <tr>
+                    <th scope="row" style="min-width: 120px"></th>
+                    <th scope="col" th:each="unit : ${units}" th:text="${unit}" style="width: 10%; text-align: center;">
+                    </th>
+                </tr>
+            </table>
+        </div>
+    </nav>
 
 
-        <table class="table table-bordered table-hover">
-            <tr>
-                <th></th>
-                <th scope="col" th:each="unit : ${units}" th:text="${unit}"></th>
-            </tr>
+    <div class="container-fluid" style="margin-top: 120px">
+        <table class="table table-hover">
+
 
             <tr th:each="day, iStat : ${days}">
 
 
-                <th scope="row" th:utext="${day.getWeekday() + '<br>' + day.getDate()}">
+                <th scope="row" th:utext="${day.getWeekday() + '<br>' + day.getDate()}"
+                    th:class="${day.isFirstDayOfMonth() ? 'border-top border-warning' : ''}" style="width: 120px">
                 </th>
 
                 <td @mouseenter="hoverDate($event.target)" @click="clickDate($event.target)" th:each="unit : ${units}"
                     th:id="${unit + '-' + day.getDate() + '-' + iStat.index}" class="date-cell"
+                    th:class="${day.isFirstDayOfMonth() ? 'border-top border-warning' : ''}"
                     th:classappend="${day.getBookings().get(unit).getId() != '' ? 'table-warning' : 'table-default'}">
                 </td>
 
             </tr>
 
         </table>
-
     </div>
-
-    <!-- <script>
-
-    document.addEventListener('DOMContentLoaded', function () {
-        var selectedDates = [];
-        var selectedUnit = null;
-        var selectionMade = false;
-
-        function clickDate(td) {
-            if (selectionMade) {
-                selectedDates.forEach(d => d.td.classList.remove('table-success'));
-                selectedDates = [];
-                selectionMade = false;
-            }
-
-            if (selectedDates.length === 0 && td.classList.contains('table-default')) {
-                td.classList.add('table-success');
-                const parts = td.id.split('-');
-                const newDate = {
-                    unit: parts[0],
-                    year: parts[1],
-                    month: parts[2],
-                    day: parts[3],
-                    td: td,
-                };
-                selectedDates.push(newDate);
-                selectedUnit = td.id.split('-')[0];
-            } else {
-                selectionMade = true;
-            }
-        }
-
-        function hoverDate(td) {
-            const parts = td.id.split('-');
-            const newDate = {
-                unit: parts[0],
-                year: parts[1],
-                month: parts[2],
-                day: parts[3],
-                td: td,
-            };
-
-            if (!selectionMade && selectedDates.length !== 0 && td.classList.contains('table-default') && newDate.unit === selectedUnit) {
-                td.classList.add('table-success');
-                selectedDates.push(newDate);
-            } else if (!selectionMade) {
-                selectedDates.forEach(d => d.td.classList.remove('table-success'));
-                selectedDates = [];
-            }
-        }
-
-        var cells = document.querySelectorAll('.date-cell');
-        cells.forEach(cell => {
-            cell.addEventListener('click', function () {
-                clickDate(this);
-            });
-
-            cell.addEventListener('mouseenter', function () {
-                hoverDate(this);
-            });
-        });
-    });
-
-</script> -->
 
 </body>
 

@@ -9,7 +9,13 @@ import (
 	"github.com/thomaskrut/tekf/booking/client"
 )
 
-var natsUrl = "nats://nats:4222"
+var (
+	natsUrl              = "nats://nats:4222"
+	bookingSubject       = "command.booking.*"
+	createBookingSubject = "command.booking.create"
+	deleteBookingSubject = "command.booking.delete"
+	updateBookingSubject = "command.booking.update"
+)
 
 func main() {
 
@@ -19,7 +25,7 @@ func main() {
 	}
 	defer nc.Close()
 
-	sub, err := nc.SubscribeSync("command.booking.*")
+	sub, err := nc.SubscribeSync(bookingSubject)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -29,7 +35,7 @@ func main() {
 
 	h := booking.NewBookingCommandHandler(nc, c)
 
-	log.Printf("Listening on subject [command.booking.*]\n")
+	log.Printf("Listening on subject %s\n", bookingSubject)
 	for {
 		msg, err := sub.NextMsg(1 * 1000 * 1000 * 1000)
 		if err != nil {
@@ -39,9 +45,13 @@ func main() {
 			log.Fatal(err)
 		}
 
+		if h.LoadState(); err != nil {
+			log.Fatal(err)
+		}
+
 		// TODO: Add update, delete
 		switch msg.Subject {
-		case "command.booking.create":
+		case createBookingSubject:
 			var cmd booking.CreateBookingCommand
 
 			err = json.Unmarshal(msg.Data, &cmd)
@@ -49,7 +59,7 @@ func main() {
 				log.Println("Error:", err)
 			}
 
-			log.Println("Received command:", cmd)
+			log.Printf("Received %s", createBookingSubject)
 
 			err := h.HandleCreateBookingCommand(cmd)
 			if err != nil {
@@ -59,7 +69,7 @@ func main() {
 
 			msg.Respond([]byte("OK"))
 
-		case "command.booking.delete":
+		case deleteBookingSubject:
 			id := string(msg.Data)
 
 			log.Println("Received delete command for booking id:", id)
@@ -69,6 +79,24 @@ func main() {
 			}
 
 			err := h.HandleDeleteBookingCommand(cmd)
+			if err != nil {
+				msg.Respond([]byte(err.Error()))
+				log.Println("Error:", err)
+			}
+
+			msg.Respond([]byte("OK"))
+
+		case updateBookingSubject:
+			var cmd booking.UpdateBookingCommand
+
+			err = json.Unmarshal(msg.Data, &cmd)
+			if err != nil {
+				log.Println("Error:", err)
+			}
+
+			log.Printf("Received %s", updateBookingSubject)
+
+			err := h.HandleUpdateBookingCommand(cmd)
 			if err != nil {
 				msg.Respond([]byte(err.Error()))
 				log.Println("Error:", err)
