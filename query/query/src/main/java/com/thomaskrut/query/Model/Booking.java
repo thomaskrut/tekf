@@ -81,8 +81,8 @@ public class Booking {
 
     public String getColor() {
         int hash = this.Id.hashCode();
-        int lowerBound = 13710880;
-        int upperBound = 14658730;
+        int lowerBound = 0xFF9999; // Light red lower bound
+        int upperBound = 0xFFCCCC; // Light red upper bound
         int range = upperBound - lowerBound;
         int colorInt = Math.abs(hash % range) + lowerBound;
         String colorHex = String.format("#%06X", colorInt);
