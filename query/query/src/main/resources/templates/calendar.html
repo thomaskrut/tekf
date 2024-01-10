@@ -22,7 +22,6 @@
     clickDate: function(td) {
 
         if (this.selectionMade) {
-            this.selectionMade = false
             this.clear()
         }
 
@@ -94,9 +93,12 @@
         this.selectedCells.forEach(cell => {
             cell.classList.remove('table-success')
         })
+        this.selectionMade = false
+        this.fromDateParts = null
         this.fromDate = null
         this.toDate = null
         this.unitId = null
+        this.selectedCells = []
         this.lastCell = null
     },
 
@@ -118,10 +120,6 @@
         }).then(response => {
             if (response.ok) {
                 this.clear()
-                this.fromDateParts = null
-                this.selectionMade = false
-                this.selectedCells = []
-                this.lastCell = null
                 window.location.reload()
             } else {
                 alert('Booking failed: ' + response.status)
@@ -168,11 +166,10 @@
 
 
     <div class="container-fluid" style="margin-top: 120px">
+
         <table class="table table-hover">
 
-
             <tr th:each="day, iStat : ${days}">
-
 
                 <th scope="row" th:utext="${day.getWeekday() + '<br>' + day.getDate()}"
                     th:class="${day.isFirstDayOfMonth() ? 'border-top border-warning' : ''}" style="width: 120px">
@@ -182,6 +179,7 @@
                     th:id="${unit + '-' + day.getDate() + '-' + iStat.index}" class="date-cell"
                     th:class="${day.isFirstDayOfMonth() ? 'border-top border-warning' : ''}"
                     th:classappend="${day.getBookings().get(unit).getId() != '' ? 'table-warning' : 'table-default'}">
+
                 </td>
 
             </tr>

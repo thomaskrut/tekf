@@ -29,7 +29,6 @@ public class CalendarModel {
         return calendar;
     }
 
-
     public void readStream(long fromRevision) throws ExecutionException, InterruptedException {
 
         if (this.client == null) {
@@ -54,7 +53,8 @@ public class CalendarModel {
             try {
                 Booking booking = mapper.readValue(event.getEvent().getEventData(), Booking.class);
                 switch (event.getEvent().getEventType()) {
-                    case "EVENT_TYPE_CREATE_BOOKING", "EVENT_TYPE_UPDATE_BOOKING" -> bookings.put(booking.getId(), booking);
+                    case "EVENT_TYPE_CREATE_BOOKING", "EVENT_TYPE_UPDATE_BOOKING" ->
+                        bookings.put(booking.getId(), booking);
                     case "EVENT_TYPE_DELETE_BOOKING" -> bookings.remove(booking.getId());
                 }
 
@@ -63,7 +63,7 @@ public class CalendarModel {
             }
 
         });
-
+        calendar.clear();
         bookings.values().forEach(calendar::addBooking);
     }
 

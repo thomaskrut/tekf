@@ -19,8 +19,7 @@ type Booking struct {
 type UnitBookings map[int][]Booking
 
 type State struct {
-	LastEventSequenceNumber int
-	UnitBookings            UnitBookings
+	UnitBookings UnitBookings
 }
 
 func (s *State) Apply(event *pb.BookingEvent) error {
@@ -29,12 +28,14 @@ func (s *State) Apply(event *pb.BookingEvent) error {
 		return s.applyCreateBooking(event)
 	case pb.EventType_EVENT_TYPE_DELETE_BOOKING:
 		return s.applyDeleteBooking(event)
+	case pb.EventType_EVENT_TYPE_UPDATE_BOOKING:
+		return s.applyUpdateBooking(event)
 	}
 	return nil
 }
 
-func (s *State) applyDeleteBooking(event *pb.BookingEvent) error {
-	booking := s.getBooking(event.Booking.GetId())
+func (s *State) deleteBooking(bookingId string) error {
+	booking := s.getBooking(bookingId)
 	if booking == nil {
 		log.Println("Illegal state: Booking not found")
 		return nil
@@ -53,33 +54,55 @@ func (s *State) applyDeleteBooking(event *pb.BookingEvent) error {
 	return nil
 }
 
-func (s *State) applyCreateBooking(event *pb.BookingEvent) error {
-
+func createBooking(event *pb.BookingEvent) (*Booking, error) {
 	fromTime, err := time.Parse("2006-01-02", event.Booking.From)
 	if err != nil {
-		return ErrUnableToParseDate
+		return nil, ErrUnableToParseDate
 	}
 
 	toTime, err := time.Parse("2006-01-02", event.Booking.To)
 	if err != nil {
-		return ErrUnableToParseDate
+		return nil, ErrUnableToParseDate
 	}
 
-	booking := Booking{
+	return &Booking{
 		Id:     event.Booking.GetId(),
 		From:   fromTime,
 		To:     toTime,
 		Guests: int(event.Booking.GetGuests()),
 		Name:   event.Booking.GetName(),
 		UnitId: int(event.Booking.GetUnitId()),
+	}, nil
+}
+
+func (s *State) applyDeleteBooking(event *pb.BookingEvent) error {
+	return s.deleteBooking(event.Booking.Id)
+}
+
+func (s *State) applyUpdateBooking(event *pb.BookingEvent) error {
+
+	if err := s.deleteBooking(event.Booking.Id); err != nil {
+		return ErrBookingNotFound
 	}
 
-	unitId := int(event.Booking.GetUnitId())
-	if s.UnitBookings == nil {
-		s.UnitBookings = make(UnitBookings)
+	booking, err := createBooking(event)
+	if err != nil {
+		return err
 	}
 
-	s.UnitBookings[unitId] = append(s.UnitBookings[unitId], booking)
+	s.UnitBookings[booking.UnitId] = append(s.UnitBookings[booking.UnitId], *booking)
+
+	return nil
+}
+
+func (s *State) applyCreateBooking(event *pb.BookingEvent) error {
+
+	booking, err := createBooking(event)
+	if err != nil {
+		return err
+	}
+
+	s.UnitBookings[booking.UnitId] = append(s.UnitBookings[booking.UnitId], *booking)
 
 	return nil
 }

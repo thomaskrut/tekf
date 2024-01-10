@@ -28,6 +28,10 @@ public class Calendar {
 
     }
 
+    public void clear() {
+        days.forEach(Day::clear);
+    }
+
     public void addBooking(Booking booking) {
         days.stream().filter(day -> day.getDate().isEqual(booking.getFromAsDate())
                 || (day.getDate().isAfter(booking.getFromAsDate()) && day.getDate().isBefore(booking.getToAsDate())))
@@ -59,6 +63,12 @@ class Day {
         bookings = new HashMap<>();
         units.forEach(u -> {
             bookings.put(u, Booking.emptyBooking(""));
+        });
+    }
+
+    public void clear() {
+        bookings.forEach((unitId, booking) -> {
+            bookings.put(unitId, Booking.emptyBooking(""));
         });
     }
 

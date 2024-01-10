@@ -49,7 +49,6 @@ func main() {
 			log.Fatal(err)
 		}
 
-		// TODO: Add update, delete
 		switch msg.Subject {
 		case createBookingSubject:
 			var cmd booking.CreateBookingCommand
