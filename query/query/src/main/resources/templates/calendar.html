@@ -9,6 +9,7 @@
 </head>
 
 <body x-data="{
+    bookingId: '',
     name: '',
     guests: 1,
     unitId: null,
@@ -16,73 +17,107 @@
     toDate: null,
     fromDateParts: null,
     selectedCells: [],
+    highlitCells: [],
+    originalColor: '',
     lastCell: null,
+    makingSelection: false,
     selectionMade: false,
+    bookingSelected: false,
 
     clickDate: function(td) {
 
-        if (this.selectionMade) {
+        if (this.selectionMade || this.bookingSelected) {
             this.clear()
         }
 
-        if (this.fromDate === null && !td.classList.contains('table-warning')) {
+        if (td.classList.contains('booked') && !this.makingSelection) {
+            this.bookingSelected = true
+            this.showBooking(td)
+            this.highlightCells(td)
+            return
+        }
+
+        if (!td.classList.contains('booked') && !this.makingSelection) {
+        this.makingSelection = true
+        this.highlightCells(td)
         const parts = td.id.split('-')
         this.fromDateParts = parts
         this.unitId = parts[0];
         this.fromDate = parts[1] + '-' + parts[2] + '-' + parts[3]
-        td.classList.add('table-success')
+        td.classList.add('selected')
         this.selectedCells.push(td)
+        this.bookingId = ''
         } else if (this.toDate === null) {
+            this.makingSelection = false
             this.clear()
+
         } else {
+            this.makingSelection = false
             this.selectionMade = true
-            td.classList.remove('table-success')
+            td.classList.remove('selected')
         }
 
     },
 
     hoverDate: function(td) {
 
+        if (this.bookingSelected) return
+
         if (this.selectionMade) return
-        if (this.fromDate === null) return
+
+        if (!this.makingSelection && td.classList.contains('booked')) {
+            this.showBooking(td)
+            this.highlightCells(td)
+            return
+        }
 
         const parts = td.id.split('-')
         unitId = parts[0];
+        this.highlightCells(td)
+        if (!this.makingSelection) {
+            this.bookingId = ''
+            this.name = ''
+            this.guests = 1
+            this.unitId = unitId
+            this.toDate = null
+            this.fromDate = parts[1] + '-' + parts[2] + '-' + parts[3]
+            return
+        }
 
         if (this.unitId !== unitId) {
             this.clear()
             return
         }
 
-        if (Number(this.fromDateParts[4]) > Number(parts[4])) {
+        if (Number(this.fromDateParts[4]) >= Number(parts[4])) {
             this.clear()
             return
         }
 
-        if (td.classList.contains('table-success')) {
-            this.lastCell.classList.remove('table-success')
+        if (td.classList.contains('selected')) {
+            this.lastCell.classList.remove('selected')
             this.toDate = parts[1] + '-' + parts[2] + '-' + parts[3]
             if (this.toDate == this.fromDate) this.toDate = null
             this.lastCell = td
             return
         }
 
-        if (this.lastCell !== null && this.lastCell.classList.contains('table-warning') && Number(this.fromDateParts[4]) < Number(parts[4])) {
+        if (this.lastCell !== null && this.lastCell.classList.contains('booked')) {
             this.clear()
             return
         }
 
-        if (td.classList.contains('table-warning') && Number(this.fromDateParts[4]) < Number(parts[4])) {
-            td.classList.add('table-success')
+        if (td.classList.contains('booked')) {
+            td.classList.add('selected')
             this.toDate = parts[1] + '-' + parts[2] + '-' + parts[3]
             this.lastCell = td
             this.selectedCells.push(td)
             return
         }
 
-        if (!td.classList.contains('table-success') && Number(this.fromDateParts[4]) < Number(parts[4])) {
+        if (!td.classList.contains('selected')) {
             this.lastCell = td
-            td.classList.add('table-success')
+            td.classList.add('selected')
             this.toDate = parts[1] + '-' + parts[2] + '-' + parts[3]
             this.selectedCells.push(td)
             return
@@ -91,15 +126,48 @@
 
     clear: function() {
         this.selectedCells.forEach(cell => {
-            cell.classList.remove('table-success')
+            cell.classList.remove('selected')
         })
         this.selectionMade = false
+        this.makingSelection = false
+        this.bookingSelected = false
         this.fromDateParts = null
         this.fromDate = null
         this.toDate = null
         this.unitId = null
         this.selectedCells = []
         this.lastCell = null
+        this.bookingId = ''
+    },
+
+    highlightCells: function(td) {
+        if (this.highlitCells.length > 0 && this.highlitCells[0].dataset.id !== td.dataset.id) {
+            this.highlitCells.forEach(cell => {
+                cell.style.backgroundColor = this.originalColor
+            })
+            this.highlitCells = []
+        }
+
+        if (this.makingSelection) return
+       
+        let id = td.dataset.id;
+        let cells = document.querySelectorAll(`td[data-id='${id}']`);
+        cells.forEach(cell => {
+            if (this.highlitCells.length === 0) {
+                this.originalColor = cell.style.backgroundColor
+            }
+            cell.style.backgroundColor = '#44cc66'
+            this.highlitCells.push(cell)
+        })
+    },
+
+    showBooking(td) {
+        this.bookingId = td.dataset.id
+        this.name = td.dataset.name
+        this.guests = td.dataset.guests
+        this.unitId = td.dataset.unit
+        this.fromDate = td.dataset.from
+        this.toDate = td.dataset.to
     },
 
     post: function() {
@@ -151,6 +219,9 @@
                 <input x-model="name" class="form-control form-control-sm m-2" type="text" aria-label="name">
 
                 <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Confirm</button>
+                <div x-show="bookingId != ''" class="navbar-text ml-4">Booking ID:
+                    <span x-text="bookingId"></span>
+                </div>
             </form>
         </div>
         <div class="container-fluid">
@@ -176,9 +247,15 @@
                 </th>
 
                 <td @mouseenter="hoverDate($event.target)" @click="clickDate($event.target)" th:each="unit : ${units}"
-                    th:id="${unit + '-' + day.getDate() + '-' + iStat.index}" class="date-cell"
+                    th:id="${unit + '-' + day.getDate() + '-' + iStat.index}"
+                    th:data-id="${day.getBookings().get(unit).getId()}"
+                    th:data-guests="${day.getBookings().get(unit).getGuests()}"
+                    th:data-name="${day.getBookings().get(unit).getName()}"
+                    th:data-from="${day.getBookings().get(unit).getFrom()}"
+                    th:data-to="${day.getBookings().get(unit).getTo()}" th:data-unit="${unit}"
                     th:class="${day.isFirstDayOfMonth() ? 'border-top border-warning' : ''}"
-                    th:classappend="${day.getBookings().get(unit).getId() != '' ? 'table-warning' : 'table-default'}">
+                    th:style="${day.getBookings().get(unit).getId() != '' ? 'background-color: ' + day.getBookings().get(unit).getColor() : ''}"
+                    th:classappend="${day.getBookings().get(unit).getId() != '' ? 'booked' : 'table-default'}">
 
                 </td>
 

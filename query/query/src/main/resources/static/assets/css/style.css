@@ -1,0 +1,7 @@
+.booked {
+    cursor: pointer
+}
+
+.selected {
+    background-color: #44cc66;
+}

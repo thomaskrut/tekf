@@ -1,7 +1,6 @@
 package com.thomaskrut.query.Model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.time.LocalDate;
 
 public class Booking {
@@ -79,4 +78,15 @@ public class Booking {
     public LocalDate getToAsDate() {
         return LocalDate.parse(to);
     }
+
+    public String getColor() {
+        int hash = this.Id.hashCode();
+        int lowerBound = 13710880;
+        int upperBound = 14658730;
+        int range = upperBound - lowerBound;
+        int colorInt = Math.abs(hash % range) + lowerBound;
+        String colorHex = String.format("#%06X", colorInt);
+        return colorHex;
+    }
+
 }
