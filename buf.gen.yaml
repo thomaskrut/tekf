@@ -14,3 +14,10 @@ plugins:
   - plugin: go-grpc
     out: eventstore/pb
     opt: paths=source_relative
+
+  - plugin: go
+    out: checkinout/pb
+    opt: paths=source_relative
+  - plugin: go-grpc
+    out: checkinout/pb
+    opt: paths=source_relative

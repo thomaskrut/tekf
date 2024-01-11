@@ -30,6 +30,13 @@ services:
       dockerfile: Dockerfile
     restart: always
 
+  checkinout-service:
+    container_name: checkinout-service
+    build:
+      context: ./checkinout
+      dockerfile: Dockerfile
+    restart: always
+
   eventstore-service:
     container_name: eventstore-service
     build:

@@ -74,6 +74,7 @@
         const parts = td.id.split('-')
         unitId = parts[0];
         this.highlightCells(td)
+        
         if (!this.makingSelection) {
             this.bookingId = ''
             this.name = ''
@@ -170,7 +171,7 @@
         this.toDate = td.dataset.to
     },
 
-    post: function() {
+    postBooking: function() {
         if (this.fromDate === null || this.toDate === null) return
         const data = {
             name: this.name,
@@ -193,12 +194,25 @@
                 alert('Booking failed: ' + response.status)
             }
         })
+    },
+
+    deleteBooking: function() {
+        fetch('http://localhost:8080/booking/' + this.bookingId, {
+            method: 'DELETE'
+        }).then(response => {
+            if (response.ok) {
+                this.clear()
+                window.location.reload()
+            } else {
+                alert('Booking failed: ' + response.status)
+            }
+        })
     }
 
     }">
     <nav class="navbar navbar-light bg-light fixed-top">
         <div class="container-fluid">
-            <form class="form-inline" @submit.prevent="post()">
+            <form class="form-inline">
 
                 <label for="unitId">Unit: </label>
                 <input x-model="unitId" class="form-control form-control-sm m-2" type="text" aria-label="unitId"
@@ -218,22 +232,30 @@
                 <label for="guests">Name: </label>
                 <input x-model="name" class="form-control form-control-sm m-2" type="text" aria-label="name">
 
-                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Confirm</button>
+                <button x-show="selectionMade" @click.prevent="postBooking()" class="btn btn-outline-success">Create
+                    booking</button>
+                <button x-show="bookingSelected" @click.prevent="deleteBooking()" class="btn btn-outline-danger">Delete
+                    booking</button>
                 <div x-show="bookingId != ''" class="navbar-text ml-4">Booking ID:
                     <span x-text="bookingId"></span>
+
                 </div>
             </form>
         </div>
-        <div class="container-fluid">
-            <table class="table table-hover m-0">
-                <tr>
-                    <th scope="row" style="min-width: 120px"></th>
-                    <th scope="col" th:each="unit : ${units}" th:text="${unit}" style="width: 10%; text-align: center;">
-                    </th>
-                </tr>
-            </table>
-        </div>
+
     </nav>
+
+
+    <div class="container-fluid fixed-top" style="margin-top: 80px">
+        <table class="table">
+            <tr>
+                <th scope="row" style="min-width: 110px"></th>
+                <th class="text-muted" scope="col" th:each="unit : ${units}" th:text="${unit}"
+                    style="width: 5%; text-align: center;">
+                </th>
+            </tr>
+        </table>
+    </div>
 
 
     <div class="container-fluid" style="margin-top: 120px">
@@ -243,7 +265,7 @@
             <tr th:each="day, iStat : ${days}">
 
                 <th scope="row" th:utext="${day.getWeekday() + '<br>' + day.getDate()}"
-                    th:class="${day.isFirstDayOfMonth() ? 'border-top border-warning' : ''}" style="width: 120px">
+                    th:class="${day.isFirstDayOfMonth() ? 'border-top border-warning' : ''}" style="width: 110px">
                 </th>
 
                 <td @mouseenter="hoverDate($event.target)" @click="clickDate($event.target)" th:each="unit : ${units}"

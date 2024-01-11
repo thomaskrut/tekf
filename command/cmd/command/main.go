@@ -16,6 +16,8 @@ var (
 	createBookingSubject = "command.booking.create"
 	deleteBookingSubject = "command.booking.delete"
 	updateBookingSubject = "command.booking.update"
+	checkinSubject       = "command.booking.checkin"
+	checkoutSubject      = "command.booking.checkout"
 )
 
 func main() {
@@ -32,6 +34,9 @@ func main() {
 	r.Post("/booking", CreateBookingHandler)
 	r.Delete("/booking/{id}", DeleteBookingHandler)
 	r.Put("/booking", UpdateBookingHandler)
+
+	r.Post("/checkin/{id}", CheckinHandler)
+	r.Post("/checkout/{id}", CheckoutHandler)
 
 	log.Printf("Starting server on port 8080")
 	if err := http.ListenAndServe(":8080", r); err != nil {
@@ -54,6 +59,62 @@ func UpdateBookingHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Received payload: %s", payload)
 
 	response, err := nc.Request(updateBookingSubject, payload, time.Second*3)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Fatal(err)
+	}
+
+	log.Println(string(response.Data))
+
+	if string(response.Data) != "OK" {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write(response.Data)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+func CheckinHandler(w http.ResponseWriter, r *http.Request) {
+	nc, err := nats.Connect(natsUrl)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer nc.Close()
+
+	id := chi.URLParam(r, "id")
+
+	log.Printf("Received id for check in: %s", id)
+
+	response, err := nc.Request(checkinSubject, []byte(id), time.Second*3)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Fatal(err)
+	}
+
+	log.Println(string(response.Data))
+
+	if string(response.Data) != "OK" {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write(response.Data)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+func CheckoutHandler(w http.ResponseWriter, r *http.Request) {
+	nc, err := nats.Connect(natsUrl)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer nc.Close()
+
+	id := chi.URLParam(r, "id")
+
+	log.Printf("Received id for check out: %s", id)
+
+	response, err := nc.Request(checkoutSubject, []byte(id), time.Second*3)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Fatal(err)

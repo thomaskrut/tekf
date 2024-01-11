@@ -218,7 +218,7 @@ func (b *BookingCommandHandler) validateEvent(event *pb.BookingEvent) error {
 		return ErrUnableToParseDate
 	}
 
-	if event.Booking.UnitId < 0 || event.Booking.UnitId > 10 {
+	if event.Booking.UnitId < 0 || event.Booking.UnitId > 20 {
 		return ErrInvalidUnitId
 	}
 
@@ -230,9 +230,9 @@ func (b *BookingCommandHandler) validateEvent(event *pb.BookingEvent) error {
 		return ErrInvalidGuestName
 	}
 
-	today := time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 0, 0, 0, 0, time.UTC)
+	//today := time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 0, 0, 0, 0, time.UTC)
 
-	if fromTime.After(toTime) || fromTime.Equal(toTime) || fromTime.Before(today) {
+	if fromTime.After(toTime) || fromTime.Equal(toTime) /*|| fromTime.Before(today)*/ {
 		return ErrInvalidDateRange
 	}
 
