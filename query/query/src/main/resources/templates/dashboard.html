@@ -1,3 +1,5 @@
+<!DOCTYPE html>
+
 <html>
 
 <head>
@@ -13,7 +15,7 @@
     <div class="container-fluid text-center fixed-top bg-dark">
 
         <div class="row text-info">
-            <div class="col">
+            <div class="col-1">
                 <h1>Unit</h1>
             </div>
             <div class="col">
@@ -30,12 +32,12 @@
     </div>
     <div class="container-fluid" style="margin-top: 80px;">
 
-        <div th:each="unit : ${units}" class="row">
+        <div th:each="unit : ${units}" class="row" x-data="row">
 
-            <div class="col text-center">
+            <div class="col-1 text-center">
                 <div class="py-2">
-                    <div class="card w-100 bg-light" style="height: 120px" ;>
-                        <div class="card-body">
+                    <div class="card w-100 bg-info" style="height: 120px" ;>
+                        <div class="card-body align-items-center d-flex justify-content-center">
                             <h1 class="card-text" th:text="${unit}"></h1>
                         </div>
                     </div>
@@ -50,7 +52,8 @@
                         </h6>
                         <div class="card-body">
 
-                            <button type="button" class="btn btn-outline-primary btn-sm">Clean</button>
+                            <button type="button" @click="clean($event.target)"
+                                class="btn btn-outline-primary btn-sm">Clean</button>
 
                         </div>
                     </div>
@@ -65,7 +68,10 @@
                         </h6>
                         <div class="card-body">
 
-                            <button type="button" class="btn btn-outline-primary btn-sm">Check out</button>
+                            <button type="button" th:data-id="${model.getCheckoutForUnit(unit).getId()}"
+                                x-init="readyToCheckIn = false" @click="checkout($event.target)"
+                                class="btn btn-outline-primary btn-sm">Check
+                                out</button>
 
                         </div>
                     </div>
@@ -80,7 +86,8 @@
                         </h6>
                         <div class="card-body">
 
-                            <button type="button" class="btn btn-outline-primary btn-sm">Check in</button>
+                            <button x-show="readyToCheckIn" type="button" class="btn btn-outline-primary btn-sm">Check
+                                in</button>
 
                         </div>
                     </div>
@@ -95,7 +102,7 @@
 
 
 
-
+    <script th:src="@{/assets/javascript/dashboard.js}"></script>
 
 </body>
 

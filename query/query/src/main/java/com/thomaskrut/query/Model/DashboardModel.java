@@ -59,11 +59,8 @@ public class DashboardModel {
                 switch (event.getEvent().getEventType()) {
                     case "EVENT_TYPE_UPDATE_BOOKING", "EVENT_TYPE_CREATE_BOOKING" -> {
 
-                        this.checkIns.remove(booking.getId());
-                        this.checkOuts.remove(booking.getId());
-                        this.occupied.remove(booking.getId());
-                        System.out.println(today);
-                        System.out.println(booking.getFromAsDate());
+                        deleteBooking(booking);
+
                         if (booking.getFromAsDate().isEqual(today)) {
                             this.checkIns.put(booking.getId(), booking);
                         } else if (booking.getToAsDate().isEqual(today)) {
@@ -75,10 +72,7 @@ public class DashboardModel {
                     }
 
                     case "EVENT_TYPE_DELETE_BOOKING" -> {
-
-                        this.checkIns.remove(booking.getId());
-                        this.checkOuts.remove(booking.getId());
-                        this.occupied.remove(booking.getId());
+                        deleteBooking(booking);
                     }
 
                 }
@@ -94,8 +88,10 @@ public class DashboardModel {
         readStream(this.lastKnownRevision + 1);
     }
 
-    public HashMap<String, Booking> getCheckIns() {
-        return checkIns;
+    private void deleteBooking(Booking booking) {
+        this.checkIns.remove(booking.getId());
+        this.checkOuts.remove(booking.getId());
+        this.occupied.remove(booking.getId());
     }
 
     public Booking getCheckinForUnit(int unit) {
