@@ -24,6 +24,7 @@ type publisher interface {
 type eventStoreClient interface {
 	Write(context.Context, *pb.BookingEvent) error
 	ReadAll(context.Context) ([]*pb.BookingEvent, error)
+	ReadLatest(context.Context) ([]*pb.BookingEvent, error)
 }
 
 type CommandHandler struct {
@@ -99,19 +100,30 @@ func (b *CommandHandler) HandleCheckoutCommand(id string) error {
 
 func (b *CommandHandler) LoadState() error {
 
+	var events []*pb.BookingEvent
+	var err error
+	ctx := context.Background()
+
 	if b.State != nil {
-		return nil
-	}
 
-	b.State = &State{
-		Checkins:  make(Checkins),
-		Checkouts: make(Checkouts),
-		today:     time.Now().Format("2006-01-02"),
-	}
+		events, err = b.EventStoreClient.ReadLatest(ctx)
+		if err != nil {
+			return err
+		}
 
-	events, err := b.EventStoreClient.ReadAll(context.Background())
-	if err != nil {
-		return err
+	} else {
+
+		b.State = &State{
+			Checkins:  make(Checkins),
+			Checkouts: make(Checkouts),
+			today:     time.Now().Format("2006-01-02"),
+		}
+
+		events, err = b.EventStoreClient.ReadAll(ctx)
+		if err != nil {
+			return err
+		}
+
 	}
 
 	for _, event := range events {

@@ -71,9 +71,15 @@ public class DashboardModel {
                         }
                     }
 
-                    case "EVENT_TYPE_DELETE_BOOKING" -> {
-                        deleteBooking(booking);
-                    }
+                    case "EVENT_TYPE_DELETE_BOOKING" -> deleteBooking(booking);
+
+                    case "EVENT_TYPE_CHECKIN_BOOKING" -> this.checkIns.values().stream()
+                            .filter(b -> b.getId().equals(booking.getId()))
+                            .findFirst().ifPresent(b -> b.setCheckedIn(true));
+
+                    case "EVENT_TYPE_CHECKOUT_BOOKING" -> this.checkOuts.values().stream()
+                            .filter(b -> b.getId().equals(booking.getId()))
+                            .findFirst().ifPresent(b -> b.setCheckedOut(true));
 
                 }
 

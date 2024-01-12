@@ -12,7 +12,6 @@ import (
 
 var (
 	today              = time.Now().Format("2006-01-02")
-	tomorrow           = time.Now().AddDate(0, 0, 1).Format("2006-01-02")
 	yesterday          = time.Now().AddDate(0, 0, -1).Format("2006-01-02")
 	futureBookingFrom  = time.Now().AddDate(0, 0, 10).Format("2006-01-02")
 	futureBookingTo    = time.Now().AddDate(0, 0, 11).Format("2006-01-02")
@@ -24,6 +23,10 @@ type mockEventStoreClient struct{}
 
 func (m *mockEventStoreClient) Write(context.Context, *pb.BookingEvent) error {
 	return nil
+}
+
+func (m *mockEventStoreClient) ReadLatest(context.Context) ([]*pb.BookingEvent, error) {
+	return nil, nil
 }
 
 func (m *mockEventStoreClient) ReadAll(context.Context) ([]*pb.BookingEvent, error) {

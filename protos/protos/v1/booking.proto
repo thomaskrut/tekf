@@ -45,6 +45,7 @@ message ReadBookingEventsRequest {
 
 message ReadBookingEventsResponse {
     BookingEvent booking_event = 1;
+    int32 revision = 2;
 }
 
 service BookingEventService {

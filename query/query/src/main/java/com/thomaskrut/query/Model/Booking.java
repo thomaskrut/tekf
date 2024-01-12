@@ -1,5 +1,6 @@
 package com.thomaskrut.query.Model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDate;
 
@@ -17,10 +18,32 @@ public class Booking {
     @JsonProperty("unit_id")
     private int unitId;
 
+    @JsonIgnore
+    private boolean checkedIn;
+
+    @JsonIgnore
+    private boolean checkedOut;
+
     public static Booking emptyBooking(String bookingId) {
         Booking booking = new Booking();
         booking.setId(bookingId);
         return booking;
+    }
+
+    public boolean isCheckedIn() {
+        return checkedIn;
+    }
+
+    public void setCheckedIn(boolean checkedIn) {
+        this.checkedIn = checkedIn;
+    }
+
+    public boolean isCheckedOut() {
+        return checkedOut;
+    }
+
+    public void setCheckedOut(boolean checkedOut) {
+        this.checkedOut = checkedOut;
     }
 
     public String getId() {

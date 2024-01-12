@@ -97,6 +97,7 @@ func (b *BookingEventService) ReadBookingEvents(req *pb.ReadBookingEventsRequest
 
 		if err = stream.Send(&pb.ReadBookingEventsResponse{
 			BookingEvent: &bookingEvent,
+			Revision:     int32(event.Event.EventNumber),
 		}); err != nil {
 			return fmt.Errorf("failed to send event: %w", err)
 		}

@@ -21,11 +21,17 @@
             <div class="col">
                 <h1>Occupied</h1>
             </div>
-            <div class="col">
-                <h1>Departure</h1>
+            <div class="col-1">
+
             </div>
             <div class="col">
-                <h1>Arrival</h1>
+                <h1>Departures</h1>
+            </div>
+            <div class="col-1">
+
+            </div>
+            <div class="col">
+                <h1>Arrivals</h1>
             </div>
         </div>
 
@@ -53,11 +59,16 @@
                         <div class="card-body">
 
                             <button type="button" @click="clean($event.target)"
-                                class="btn btn-outline-primary btn-sm">Clean</button>
+                                class="btn btn-outline-primary">Clean</button>
 
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <div class="col-1 align-items-center d-flex justify-content-center">
+                <img th:if="${model.getCheckoutForUnit(unit) != null}" th:src="@{/assets/img/arrow_light.png}"
+                    class="img-fluid">
             </div>
 
             <div class="col">
@@ -68,14 +79,28 @@
                         </h6>
                         <div class="card-body">
 
-                            <button type="button" th:data-id="${model.getCheckoutForUnit(unit).getId()}"
-                                x-init="readyToCheckIn = false" @click="checkout($event.target)"
-                                class="btn btn-outline-primary btn-sm">Check
-                                out</button>
+                            <span th:switch="${model.getCheckoutForUnit(unit).isCheckedOut()}">
+
+                                <button th:case="false" type="button"
+                                    th:data-id="${model.getCheckoutForUnit(unit).getId()}"
+                                    x-init="readyToCheckIn = false" @click="checkout($event.target)"
+                                    class="btn btn-outline-primary">Check
+                                    out</button>
+
+                                <button th:case="true" type="button" x-init="readyToCheckIn = true"
+                                    class="btn btn-outline-success" disabled>Checked
+                                    out &#10003</button>
+
+                            </span>
 
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <div class="col-1 align-items-center d-flex justify-content-center">
+                <img th:if="${model.getCheckinForUnit(unit) != null}" th:src="@{/assets/img/arrow_light.png}"
+                    class="img-fluid">
             </div>
 
             <div class="col">
@@ -86,8 +111,15 @@
                         </h6>
                         <div class="card-body">
 
-                            <button x-show="readyToCheckIn" type="button" class="btn btn-outline-primary btn-sm">Check
-                                in</button>
+                            <span th:switch="${model.getCheckinForUnit(unit).isCheckedIn()}">
+                                <button th:case="false" x-show="readyToCheckIn" type="button"
+                                    th:data-id="${model.getCheckinForUnit(unit).getId()}"
+                                    @click="checkin($event.target)" class="btn btn-outline-primary">Check
+                                    in</button>
+                                <button th:case="true" x-show="readyToCheckIn" type="button"
+                                    class="btn btn-outline-success">Checked
+                                    in &#10003</button>
+                            </span>
 
                         </div>
                     </div>
