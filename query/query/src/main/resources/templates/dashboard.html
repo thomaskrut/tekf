@@ -12,31 +12,42 @@
 
 <body>
 
-    <div class="container-fluid text-center fixed-top bg-dark">
+    <div class="container-fluid fixed-top bg-dark">
 
-        <div class="row text-info">
+        <div class="row text-light p-4">
+            <div class="col-12">
+                <a th:href="@{/dashboard}" class="btn btn-outline-light btn-sm">Dashboard</a>
+                <a th:href="@{/dashboard(date=${yesterday})}" class="btn btn-outline-light btn-sm">
+                    &#60 </a>
+                <span th:text="${today}" class="btn btn-outline-light btn-sm"></span>
+                <a th:href="@{/dashboard(date=${tomorrow})}" class="btn btn-outline-light btn-sm">
+                    &#62 </a>
+            </div>
+        </div>
+
+        <div class="row text-info text-uppercase text-center">
             <div class="col-1">
-                <h1>Unit</h1>
+                <h3>Unit</h3>
             </div>
             <div class="col">
-                <h1>Occupied</h1>
+                <h3>Occupied</h3>
             </div>
             <div class="col-1">
 
             </div>
             <div class="col">
-                <h1>Departures</h1>
+                <h3>Departures</h3>
             </div>
             <div class="col-1">
 
             </div>
             <div class="col">
-                <h1>Arrivals</h1>
+                <h3>Arrivals</h3>
             </div>
         </div>
 
     </div>
-    <div class="container-fluid" style="margin-top: 80px;">
+    <div class="container-fluid" style="margin-top: 120px;">
 
         <div th:each="unit : ${units}" class="row" x-data="row">
 
@@ -57,8 +68,7 @@
                         <h6 class="card-header" th:text="${model.getOccupiedForUnit(unit).getName()}">
                         </h6>
                         <div class="card-body">
-
-                            <button type="button" @click="clean($event.target)"
+                            <button th:if="${showButtons}" type="button" @click="clean($event.target)"
                                 class="btn btn-outline-primary">Clean</button>
 
                         </div>
@@ -79,7 +89,7 @@
                         </h6>
                         <div class="card-body">
 
-                            <span th:switch="${model.getCheckoutForUnit(unit).isCheckedOut()}">
+                            <span th:if="${showButtons}" th:switch="${model.getCheckoutForUnit(unit).isCheckedOut()}">
 
                                 <button th:case="false" type="button"
                                     th:data-id="${model.getCheckoutForUnit(unit).getId()}"
@@ -111,7 +121,7 @@
                         </h6>
                         <div class="card-body">
 
-                            <span th:switch="${model.getCheckinForUnit(unit).isCheckedIn()}">
+                            <span th:if="${showButtons}" th:switch="${model.getCheckinForUnit(unit).isCheckedIn()}">
                                 <button th:case="false" x-show="readyToCheckIn" type="button"
                                     th:data-id="${model.getCheckinForUnit(unit).getId()}"
                                     @click="checkin($event.target)" class="btn btn-outline-primary">Check

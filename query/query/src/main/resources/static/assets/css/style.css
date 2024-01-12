@@ -5,3 +5,7 @@
 .selected {
     background-color: #44cc66;
 }
+
+body {
+    background-color: bisque;
+}

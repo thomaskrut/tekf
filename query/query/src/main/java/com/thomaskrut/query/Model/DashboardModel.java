@@ -42,6 +42,8 @@ public class DashboardModel {
                     LocalDate.now().getDayOfMonth());
         }
 
+        System.out.println(today);
+
         ReadStreamOptions options = ReadStreamOptions.get()
                 .forwards()
                 .fromRevision(fromRevision);
@@ -90,8 +92,15 @@ public class DashboardModel {
         });
     }
 
-    public void update() throws ExecutionException, InterruptedException {
-        readStream(this.lastKnownRevision + 1);
+    public void update(LocalDate date) throws ExecutionException, InterruptedException {
+
+        if (date.equals(today)) {
+            readStream(this.lastKnownRevision + 1);
+        } else {
+            this.today = date;
+            readStream(0);
+        }
+
     }
 
     private void deleteBooking(Booking booking) {

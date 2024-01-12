@@ -14,7 +14,7 @@
 
 <body x-data="calendar">
 
-    <nav class="navbar navbar-light bg-light fixed-top">
+    <nav class="navbar navbar-light bg-dark text-info fixed-top">
         <div class="container-fluid">
             <form class="form-inline">
 
@@ -36,11 +36,11 @@
                 <label for="guests">Name: </label>
                 <input x-model="name" class="form-control form-control-sm m-2" type="text" aria-label="name">
 
-                <button x-show="selectionMade" @click.prevent="postBooking()" class="btn btn-outline-success">Create
+                <button x-show="selectionMade" @click.prevent="postBooking()" class="btn btn-success">Create
                     booking</button>
-                <button x-show="bookingSelected" @click.prevent="deleteBooking()" class="btn btn-outline-danger">Delete
+                <button x-show="bookingSelected" @click.prevent="deleteBooking()" class="btn btn-danger">Delete
                     booking</button>
-                <div x-show="bookingId != ''" class="navbar-text ml-4">Booking ID:
+                <div x-show="bookingId != ''" class="navbar-text ml-4 text-info">Booking ID:
                     <span x-text="bookingId"></span>
 
                 </div>
