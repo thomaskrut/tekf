@@ -59,7 +59,7 @@ public class DashboardModel {
             try {
                 Booking booking = mapper.readValue(event.getEvent().getEventData(), Booking.class);
                 switch (event.getEvent().getEventType()) {
-                    case "EVENT_TYPE_UPDATE_BOOKING", "EVENT_TYPE_CREATE_BOOKING" -> {
+                    case "EVENT_TYPE_BOOKING_UPDATED", "EVENT_TYPE_BOOKING_CREATED" -> {
 
                         deleteBooking(booking);
 
@@ -73,13 +73,13 @@ public class DashboardModel {
                         }
                     }
 
-                    case "EVENT_TYPE_DELETE_BOOKING" -> deleteBooking(booking);
+                    case "EVENT_TYPE_BOOKING_DELETED" -> deleteBooking(booking);
 
-                    case "EVENT_TYPE_CHECKIN_BOOKING" -> this.checkIns.values().stream()
+                    case "EVENT_TYPE_BOOKING_CHECKED_IN" -> this.checkIns.values().stream()
                             .filter(b -> b.getId().equals(booking.getId()))
                             .findFirst().ifPresent(b -> b.setCheckedIn(true));
 
-                    case "EVENT_TYPE_CHECKOUT_BOOKING" -> this.checkOuts.values().stream()
+                    case "EVENT_TYPE_BOOKING_CHECKED_OUT" -> this.checkOuts.values().stream()
                             .filter(b -> b.getId().equals(booking.getId()))
                             .findFirst().ifPresent(b -> b.setCheckedOut(true));
 

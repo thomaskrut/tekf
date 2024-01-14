@@ -26,15 +26,15 @@ type State struct {
 
 func (s *State) Apply(event *pb.BookingEvent) error {
 	switch event.EventType {
-	case pb.EventType_EVENT_TYPE_CREATE_BOOKING:
+	case pb.EventType_EVENT_TYPE_BOOKING_CREATED:
 		return s.applyCreate(event.Booking)
-	case pb.EventType_EVENT_TYPE_UPDATE_BOOKING:
+	case pb.EventType_EVENT_TYPE_BOOKING_UPDATED:
 		return s.applyUpdate(event.Booking)
-	case pb.EventType_EVENT_TYPE_DELETE_BOOKING:
+	case pb.EventType_EVENT_TYPE_BOOKING_DELETED:
 		return s.applyDelete(event.Booking.Id)
-	case pb.EventType_EVENT_TYPE_CHECKIN_BOOKING:
+	case pb.EventType_EVENT_TYPE_BOOKING_CHECKED_IN:
 		return s.applyCheckin(event.Booking.Id)
-	case pb.EventType_EVENT_TYPE_CHECKOUT_BOOKING:
+	case pb.EventType_EVENT_TYPE_BOOKING_CHECKED_OUT:
 		return s.applyCheckout(event.Booking.Id)
 	}
 	return nil

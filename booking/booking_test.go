@@ -29,7 +29,7 @@ func (m *mockEventStoreClient) Write(context.Context, *pb.BookingEvent) error {
 func (m *mockEventStoreClient) ReadAll(context.Context) ([]*pb.BookingEvent, error) {
 	return []*pb.BookingEvent{
 		{
-			EventType: pb.EventType_EVENT_TYPE_CREATE_BOOKING,
+			EventType: pb.EventType_EVENT_TYPE_BOOKING_CREATED,
 			Booking: &pb.Booking{
 				Id:     "abc123",
 				From:   futureBookingFrom,
@@ -40,7 +40,7 @@ func (m *mockEventStoreClient) ReadAll(context.Context) ([]*pb.BookingEvent, err
 			},
 		},
 		{
-			EventType: pb.EventType_EVENT_TYPE_CREATE_BOOKING,
+			EventType: pb.EventType_EVENT_TYPE_BOOKING_CREATED,
 			Booking: &pb.Booking{
 				Id:     "efg456",
 				From:   futureBookingFrom2,

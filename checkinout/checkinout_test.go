@@ -32,7 +32,7 @@ func (m *mockEventStoreClient) ReadLatest(context.Context) ([]*pb.BookingEvent, 
 func (m *mockEventStoreClient) ReadAll(context.Context) ([]*pb.BookingEvent, error) {
 	return []*pb.BookingEvent{
 		{
-			EventType: pb.EventType_EVENT_TYPE_CREATE_BOOKING,
+			EventType: pb.EventType_EVENT_TYPE_BOOKING_CREATED,
 			Booking: &pb.Booking{
 				Id:     "abc123",
 				From:   today,
@@ -43,7 +43,7 @@ func (m *mockEventStoreClient) ReadAll(context.Context) ([]*pb.BookingEvent, err
 			},
 		},
 		{
-			EventType: pb.EventType_EVENT_TYPE_CREATE_BOOKING,
+			EventType: pb.EventType_EVENT_TYPE_BOOKING_CREATED,
 			Booking: &pb.Booking{
 				Id:     "efg456",
 				From:   yesterday,
@@ -54,7 +54,7 @@ func (m *mockEventStoreClient) ReadAll(context.Context) ([]*pb.BookingEvent, err
 			},
 		},
 		{
-			EventType: pb.EventType_EVENT_TYPE_CREATE_BOOKING,
+			EventType: pb.EventType_EVENT_TYPE_BOOKING_CREATED,
 			Booking: &pb.Booking{
 				Id:     "hij789",
 				From:   futureBookingFrom,
@@ -65,7 +65,7 @@ func (m *mockEventStoreClient) ReadAll(context.Context) ([]*pb.BookingEvent, err
 			},
 		},
 		{
-			EventType: pb.EventType_EVENT_TYPE_CREATE_BOOKING,
+			EventType: pb.EventType_EVENT_TYPE_BOOKING_CREATED,
 			Booking: &pb.Booking{
 				Id:     "xyz987",
 				From:   today,
@@ -76,19 +76,19 @@ func (m *mockEventStoreClient) ReadAll(context.Context) ([]*pb.BookingEvent, err
 			},
 		},
 		{
-			EventType: pb.EventType_EVENT_TYPE_CHECKIN_BOOKING,
+			EventType: pb.EventType_EVENT_TYPE_BOOKING_CHECKED_IN,
 			Booking: &pb.Booking{
 				Id: "xyz987",
 			},
 		},
 		{
-			EventType: pb.EventType_EVENT_TYPE_CHECKOUT_BOOKING,
+			EventType: pb.EventType_EVENT_TYPE_BOOKING_CHECKED_OUT,
 			Booking: &pb.Booking{
 				Id: "xyz987",
 			},
 		},
 		{
-			EventType: pb.EventType_EVENT_TYPE_CREATE_BOOKING,
+			EventType: pb.EventType_EVENT_TYPE_BOOKING_CREATED,
 			Booking: &pb.Booking{
 				Id:     "uvw123",
 				From:   today,
@@ -99,13 +99,13 @@ func (m *mockEventStoreClient) ReadAll(context.Context) ([]*pb.BookingEvent, err
 			},
 		},
 		{
-			EventType: pb.EventType_EVENT_TYPE_DELETE_BOOKING,
+			EventType: pb.EventType_EVENT_TYPE_BOOKING_DELETED,
 			Booking: &pb.Booking{
 				Id: "uvw123",
 			},
 		},
 		{
-			EventType: pb.EventType_EVENT_TYPE_CREATE_BOOKING,
+			EventType: pb.EventType_EVENT_TYPE_BOOKING_CREATED,
 			Booking: &pb.Booking{
 				Id:     "jkl012",
 				From:   today,
@@ -116,7 +116,7 @@ func (m *mockEventStoreClient) ReadAll(context.Context) ([]*pb.BookingEvent, err
 			},
 		},
 		{
-			EventType: pb.EventType_EVENT_TYPE_UPDATE_BOOKING,
+			EventType: pb.EventType_EVENT_TYPE_BOOKING_UPDATED,
 			Booking: &pb.Booking{
 				Id:     "jkl012",
 				From:   futureBookingFrom2,

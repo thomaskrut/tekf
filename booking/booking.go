@@ -99,7 +99,7 @@ func (b *BookingCommandHandler) HandleDeleteBookingCommand(cmd DeleteBookingComm
 	}
 
 	event := pb.BookingEvent{
-		EventType: pb.EventType_EVENT_TYPE_DELETE_BOOKING,
+		EventType: pb.EventType_EVENT_TYPE_BOOKING_DELETED,
 		Metadata: &pb.Metadata{
 			Timestamp: timestamppb.Now(),
 		},
@@ -129,7 +129,7 @@ func (b *BookingCommandHandler) HandleDeleteBookingCommand(cmd DeleteBookingComm
 func (b *BookingCommandHandler) HandleCreateBookingCommand(cmd CreateBookingCommand) error {
 
 	event := pb.BookingEvent{
-		EventType: pb.EventType_EVENT_TYPE_CREATE_BOOKING,
+		EventType: pb.EventType_EVENT_TYPE_BOOKING_CREATED,
 		Metadata: &pb.Metadata{
 			Timestamp: timestamppb.Now(),
 		},
@@ -172,7 +172,7 @@ func (b *BookingCommandHandler) HandleUpdateBookingCommand(cmd UpdateBookingComm
 	}
 
 	event := pb.BookingEvent{
-		EventType: pb.EventType_EVENT_TYPE_UPDATE_BOOKING,
+		EventType: pb.EventType_EVENT_TYPE_BOOKING_UPDATED,
 		Metadata: &pb.Metadata{
 			Timestamp: timestamppb.Now(),
 		},

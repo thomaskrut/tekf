@@ -42,7 +42,7 @@ func NewCommandHandler(publisher publisher, eventStoreClient eventStoreClient) *
 
 func (b *CommandHandler) HandleCheckinCommand(id string) error {
 	event := pb.BookingEvent{
-		EventType: pb.EventType_EVENT_TYPE_CHECKIN_BOOKING,
+		EventType: pb.EventType_EVENT_TYPE_BOOKING_CHECKED_IN,
 		Metadata: &pb.Metadata{
 			Timestamp: timestamppb.Now(),
 		},
@@ -71,7 +71,7 @@ func (b *CommandHandler) HandleCheckinCommand(id string) error {
 
 func (b *CommandHandler) HandleCheckoutCommand(id string) error {
 	event := pb.BookingEvent{
-		EventType: pb.EventType_EVENT_TYPE_CHECKOUT_BOOKING,
+		EventType: pb.EventType_EVENT_TYPE_BOOKING_CHECKED_OUT,
 		Metadata: &pb.Metadata{
 			Timestamp: timestamppb.Now(),
 		},

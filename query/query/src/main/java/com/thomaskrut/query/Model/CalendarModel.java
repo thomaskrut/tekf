@@ -53,9 +53,9 @@ public class CalendarModel {
             try {
                 Booking booking = mapper.readValue(event.getEvent().getEventData(), Booking.class);
                 switch (event.getEvent().getEventType()) {
-                    case "EVENT_TYPE_CREATE_BOOKING", "EVENT_TYPE_UPDATE_BOOKING" ->
+                    case "EVENT_TYPE_BOOKING_CREATED", "EVENT_TYPE_BOOKING_UPDATED" ->
                         bookings.put(booking.getId(), booking);
-                    case "EVENT_TYPE_DELETE_BOOKING" -> bookings.remove(booking.getId());
+                    case "EVENT_TYPE_BOOKING_DELETED" -> bookings.remove(booking.getId());
                 }
 
             } catch (IOException e) {
