@@ -1,4 +1,4 @@
-name: "Push images to ghrc"
+name: "Push query API image to ghrc"
 
 on:
   push:
@@ -34,9 +34,10 @@ jobs:
           java-version: "17"
           distribution: "corretto"
 
-      # Build jar (running Checkstyle and unit tests) and generate jacoco test report
+      # Build jar
       - name: Build jar
         run: |
+          cd query/query
           chmod +x gradlew
           ./gradlew build
 

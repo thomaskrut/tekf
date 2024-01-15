@@ -1,4 +1,4 @@
-name: "Push images to ghrc"
+name: "Push booking service image to ghrc"
 
 on:
   push:
