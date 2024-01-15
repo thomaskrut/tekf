@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	natsUrl              = "nats://nats-4vo3mzwhga-lz.a.run.app:4222"
+	natsUrl              = "nats://nats-4vo3mzwhga-lz.a.run.app"
 	createBookingSubject = "command.booking.create"
 	deleteBookingSubject = "command.booking.delete"
 	updateBookingSubject = "command.booking.update"
