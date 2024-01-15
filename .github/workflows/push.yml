@@ -37,8 +37,8 @@ jobs:
             
             # Build and push Docker image to ghcr.io using image name and tag from metadata-action
             - name: Build and push Docker image to ghcr.io
-            uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
-            with:
+              uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
+              with:
                 context: ./command
                 push: true
                 tags: ${{ steps.meta.outputs.tags }}
