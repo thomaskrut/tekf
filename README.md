@@ -7,9 +7,9 @@ Experimentell implementation av CQRS och Event Sourcing i en microservices-arkit
 
 Använda tekniker:
  - Go / Chi router
- - NATS message broker
- - EventstoreDb
+ - [NATS](https://nats.io/) message broker
+ - [EventstoreDb](https://www.eventstore.com/)
  - Java / Spring boot
  - gRPC
- - Thymeleaf
- - AlpineJS
+ - [Thymeleaf](https://www.thymeleaf.org/)
+ - [AlpineJS](https://alpinejs.dev/)
