@@ -11,7 +11,7 @@ services:
       - "8081:8081"
     container_name: query-service
     environment:
-      EVENTSTORE_DB_URL: esdb://eventstore-db:2113?tls=false
+      EVENTSTORE_DB_URL: esdb://eventstore-db-service:2113?tls=false
       SERVER_PORT: 8081
 
   command-service:

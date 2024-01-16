@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	natsUrl              = "nats://nats:4222"
+	natsUrl              = "nats://nats-service:4222"
 	bookingSubject       = "command.booking.*"
 	createBookingSubject = "command.booking.create"
 	deleteBookingSubject = "command.booking.delete"
