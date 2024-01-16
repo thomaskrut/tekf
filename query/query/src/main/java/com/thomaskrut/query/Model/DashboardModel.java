@@ -42,8 +42,6 @@ public class DashboardModel {
                     LocalDate.now().getDayOfMonth());
         }
 
-        System.out.println(today);
-
         ReadStreamOptions options = ReadStreamOptions.get()
                 .forwards()
                 .fromRevision(fromRevision);
@@ -55,9 +53,11 @@ public class DashboardModel {
         result.getEvents().forEach(event -> {
 
             this.lastKnownRevision = event.getEvent().getRevision();
-            System.out.println(this.lastKnownRevision);
+
             try {
+
                 Booking booking = mapper.readValue(event.getEvent().getEventData(), Booking.class);
+
                 switch (event.getEvent().getEventType()) {
                     case "EVENT_TYPE_BOOKING_UPDATED", "EVENT_TYPE_BOOKING_CREATED" -> {
 
