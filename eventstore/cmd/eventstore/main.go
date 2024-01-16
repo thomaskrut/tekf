@@ -13,7 +13,7 @@ import (
 func main() {
 
 	// Connect to EventStoreDB
-	settings, err := esdb.ParseConnectionString("esdb://eventstore-db:2113?tls=false")
+	settings, err := esdb.ParseConnectionString("esdb://eventstore-db-service:2113?tls=false")
 
 	if err != nil {
 		log.Fatalf("Failed to parse EventStoreDB connection string: %v", err)
