@@ -19,7 +19,6 @@ public class CalendarController {
     public String calendar(Model model) throws ExecutionException, InterruptedException {
 
         calendarModel.update();
-
         model.addAttribute("days", calendarModel.getCalendar().getDays());
         model.addAttribute("units", calendarModel.getCalendar().getUnits());
         return "calendar.html";

@@ -2,6 +2,10 @@ package com.thomaskrut.query.Model;
 
 import com.eventstore.dbclient.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thomaskrut.query.Controller.CalendarController;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +19,7 @@ public class CalendarModel {
     private EventStoreDBClient client;
     private Calendar calendar;
     private HashMap<String, Booking> bookings;
+    Logger logger = LoggerFactory.getLogger(CalendarModel.class);
 
     @Value("${eventstore-db.url}")
     private String eventstoreDbUrl;
@@ -22,7 +27,7 @@ public class CalendarModel {
     private long lastKnownRevision;
 
     public CalendarModel() {
-        this.lastKnownRevision = 0;
+        this.lastKnownRevision = -1;
     }
 
     public Calendar getCalendar() {
@@ -49,7 +54,7 @@ public class CalendarModel {
         result.getEvents().forEach(event -> {
 
             this.lastKnownRevision = event.getEvent().getRevision();
-            System.out.println(this.lastKnownRevision);
+            logger.info("Processing event: " + event.getEvent().getRevision() + " " + event.getEvent().getEventType());
             try {
                 Booking booking = mapper.readValue(event.getEvent().getEventData(), Booking.class);
                 switch (event.getEvent().getEventType()) {
