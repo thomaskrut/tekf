@@ -18,7 +18,7 @@ public class CalendarController {
     @RequestMapping("/calendar")
     public String calendar(Model model) throws ExecutionException, InterruptedException {
 
-        calendarModel.update();
+        calendarModel.update(null);
         model.addAttribute("days", calendarModel.getCalendar().getDays());
         model.addAttribute("units", calendarModel.getCalendar().getUnits());
         return "calendar.html";

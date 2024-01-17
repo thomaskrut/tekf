@@ -2,46 +2,34 @@ package com.thomaskrut.query.Model;
 
 import com.eventstore.dbclient.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.thomaskrut.query.Controller.CalendarController;
 
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
 
 @Service
-public class CalendarModel {
+public class CalendarModel extends ReadModel {
 
-    private EventStoreDBClient client;
-    private Calendar calendar;
-    private HashMap<String, Booking> bookings;
-    Logger logger = LoggerFactory.getLogger(CalendarModel.class);
 
-    @Value("${eventstore-db.url}")
-    private String eventstoreDbUrl;
-
-    private long lastKnownRevision;
+    private final Calendar calendar;
+    private final HashMap<String, Booking> bookings;
 
     public CalendarModel() {
-        this.lastKnownRevision = -1;
+        calendar = new Calendar(units);
+        bookings = new HashMap<>();
+        logger =  LoggerFactory.getLogger(CalendarModel.class);
     }
 
     public Calendar getCalendar() {
         return calendar;
     }
 
+    @Override
     public void readStream(long fromRevision) throws ExecutionException, InterruptedException {
-
-        if (this.client == null) {
-            EventStoreDBClientSettings settings = EventStoreDBConnectionString.parseOrThrow(this.eventstoreDbUrl);
-            this.client = EventStoreDBClient.create(settings);
-            this.calendar = new Calendar();
-            this.bookings = new HashMap<>();
-        }
 
         ReadStreamOptions options = ReadStreamOptions.get()
                 .forwards()
@@ -53,7 +41,7 @@ public class CalendarModel {
 
         result.getEvents().forEach(event -> {
 
-            this.lastKnownRevision = event.getEvent().getRevision();
+            lastKnownRevision = event.getEvent().getRevision();
             logger.info("Processing event: " + event.getEvent().getRevision() + " " + event.getEvent().getEventType());
             try {
                 Booking booking = mapper.readValue(event.getEvent().getEventData(), Booking.class);
@@ -64,7 +52,7 @@ public class CalendarModel {
                 }
 
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                logger.error("Error processing event: " + e.getMessage(), e);
             }
 
         });
@@ -72,7 +60,10 @@ public class CalendarModel {
         bookings.values().forEach(calendar::addBooking);
     }
 
-    public void update() throws ExecutionException, InterruptedException {
+    @Override
+    public void update(LocalDate date) throws ExecutionException, InterruptedException {
         readStream(this.lastKnownRevision + 1);
     }
+
+
 }

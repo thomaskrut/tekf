@@ -2,7 +2,7 @@ package com.thomaskrut.query.Model;
 
 import com.eventstore.dbclient.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Value;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -12,35 +12,24 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 @Service
-public class DashboardModel {
+public class DashboardModel extends ReadModel {
 
-    private long lastKnownRevision;
-    private final List<Integer> units;
     private LocalDate today;
-    private EventStoreDBClient client;
-    private HashMap<String, Booking> checkIns;
-    private HashMap<String, Booking> checkOuts;
-    private HashMap<String, Booking> occupied;
-
-    @Value("${eventstore-db.url}")
-    private String eventstoreDbUrl;
+    private final HashMap<String, Booking> checkIns;
+    private final HashMap<String, Booking> checkOuts;
+    private final HashMap<String, Booking> occupied;
 
     public DashboardModel() {
-        this.lastKnownRevision = 0;
-        this.units = List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20);
+        checkIns = new HashMap<>();
+        checkOuts = new HashMap<>();
+        occupied = new HashMap<>();
+        today = LocalDate.of(LocalDate.now().getYear(), LocalDate.now().getMonth(),
+                LocalDate.now().getDayOfMonth());
+        logger =  LoggerFactory.getLogger(DashboardModel.class);
     }
 
+    @Override
     public void readStream(long fromRevision) throws ExecutionException, InterruptedException {
-
-        if (this.client == null) {
-            EventStoreDBClientSettings settings = EventStoreDBConnectionString.parseOrThrow(this.eventstoreDbUrl);
-            this.client = EventStoreDBClient.create(settings);
-            this.checkIns = new HashMap<>();
-            this.checkOuts = new HashMap<>();
-            this.occupied = new HashMap<>();
-            this.today = LocalDate.of(LocalDate.now().getYear(), LocalDate.now().getMonth(),
-                    LocalDate.now().getDayOfMonth());
-        }
 
         ReadStreamOptions options = ReadStreamOptions.get()
                 .forwards()
@@ -52,8 +41,8 @@ public class DashboardModel {
 
         result.getEvents().forEach(event -> {
 
-            this.lastKnownRevision = event.getEvent().getRevision();
-
+            lastKnownRevision = event.getEvent().getRevision();
+            logger.info("Processing event: " + event.getEvent().getRevision() + " " + event.getEvent().getEventType());
             try {
 
                 Booking booking = mapper.readValue(event.getEvent().getEventData(), Booking.class);
@@ -86,12 +75,13 @@ public class DashboardModel {
                 }
 
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                logger.error("Error processing event: " + e.getMessage(), e);
             }
 
         });
     }
 
+    @Override
     public void update(LocalDate date) throws ExecutionException, InterruptedException {
 
         if (date.equals(today)) {
