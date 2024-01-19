@@ -13,7 +13,7 @@ public class Calendar {
         this.units = units;
         this.days = new ArrayList<>();
 
-        LocalDate startDate = LocalDate.now().minusDays(14);
+        LocalDate startDate = LocalDate.now();
         LocalDate endDate = startDate.plusDays(100);
 
         startDate.datesUntil(endDate).forEach(date -> {

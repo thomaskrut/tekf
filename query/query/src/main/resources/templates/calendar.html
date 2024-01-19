@@ -14,43 +14,47 @@
 
 <body x-data="calendar">
 
-    <nav class="navbar navbar-light bg-dark text-info fixed-top">
+    <nav class="navbar navbar-light bg-dark text-info fixed-top" style="height: 120px">
         <div class="container-fluid">
             <form class="form-inline">
 
                 <label for="unitId">Unit: </label>
-                <input x-model="unitId" class="form-control form-control-sm m-2" type="text" aria-label="unitId"
-                    readonly>
+                <input id="unitId" x-model="unitId" class="form-control form-control-sm m-2" type="text" aria-label="unitId"
+                       readonly>
 
                 <label for="fromDate">Check in: </label>
-                <input x-model="fromDate" class="col-auto form-control form-control-sm m-2" type="text"
+                <input id="fromDate" x-model="fromDate" class="col-auto form-control form-control-sm m-2" type="text"
                     aria-label="fromDate" readonly>
 
                 <label for="toDate">Check out: </label>
-                <input x-model="toDate" class="form-control form-control-sm m-2" type="text" aria-label="toDate"
+                <input id="toDate" x-model="toDate" class="form-control form-control-sm m-2" type="text" aria-label="toDate"
                     readonly>
 
                 <label for="guests">Guests: </label>
-                <input x-model="guests" class="form-control form-control-sm m-2" type="text" aria-label="toDate">
+                <input id="guests" x-model="guests" class="form-control form-control-sm m-2" type="text" aria-label="toDate">
 
-                <label for="guests">Name: </label>
-                <input x-model="name" class="form-control form-control-sm m-2" type="text" aria-label="name">
+                <label for="name">Name: </label>
+                <input id="name" x-model="name" class="form-control form-control-sm m-2" type="text" aria-label="name">
+            </form>
+                <form class="form-inline">
+                <label for="bookingid">Booking ID: </label>
+                <input id="bookingid" x-model="bookingId" class="form-control form-control-sm m-2" type="text" aria-label="bookingId" style="width: 240px" readonly>
 
                 <button x-show="selectionMade" @click.prevent="postBooking()" class="btn btn-success">Create
                     booking</button>
                 <button x-show="bookingSelected" @click.prevent="deleteBooking()" class="btn btn-danger">Delete
                     booking</button>
-                <div x-show="bookingId != ''" class="navbar-text ml-4 text-info">Booking ID:
-                    <span x-text="bookingId"></span>
 
+
+                </form>
                 </div>
-            </form>
+
         </div>
 
     </nav>
 
 
-    <div class="container-fluid fixed-top" style="margin-top: 80px">
+    <div class="container-fluid fixed-top" style="margin-top: 120px">
         <table class="table">
             <tr>
                 <th scope="row" style="min-width: 110px"></th>
